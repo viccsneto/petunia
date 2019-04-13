@@ -1,4 +1,8 @@
+#include <stdio.h>
+#include <string.h>
+
 #include <petunia/message.h>
+
 namespace Petunia
 {
   Message::Message(std::string msg_type, std::string msg_text, size_t msg_size, void *msg_data)

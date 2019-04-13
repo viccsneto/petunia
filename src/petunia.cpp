@@ -4,7 +4,8 @@
 #include <chrono>
 #include <iostream>
 #include <list>
-#include <petunia/Petunia.h>
+
+#include <petunia/petunia.h>
 #include <petunia/message.h>
 #include <petunia/osutils.h>
 
@@ -212,7 +213,7 @@ namespace Petunia
 
     if (!OSUtils::FolderExists(petunia_folder_path)) {
       if (!OSUtils::CreateFolder(petunia_folder_path)) {
-        throw std::exception("Could not create Petunia Folder");
+        return nullptr;
       }
     }
 

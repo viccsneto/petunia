@@ -1,11 +1,13 @@
 #include <chrono>
+
 #include <petunia/osutils.h>
-#include <ratio>
+
 #ifdef _WIN32
-#include <process.h>
-#include <windows.h>
+#  include <process.h>
+#  include <windows.h>
 #else
-#include <unistd.h>
+#  include <sys/stat.h>
+#  include <unistd.h>
 #endif
 
 namespace Petunia
@@ -53,14 +55,33 @@ namespace Petunia
     return "/var/tmp/";
   }
 
-  bool OSUtils::FolderExists(std::string path)
+  bool OSUtils::FileExists(std::string &path)
   {
-    throw std::logic_error("The method or operation is not implemented.");
+    struct stat looking_stat;
+    if (stat(path.c_str(), &looking_stat) == 0) {
+      return looking_stat.st_mode & S_IFREG == S_IFREG;
+    }
+
+    return false;
   }
 
-  bool OSUtils::FileExists(std::string path)
+  bool OSUtils::FolderExists(std::string &path)
   {
-    throw std::logic_error("The method or operation is not implemented.");
+    struct stat looking_stat;
+    if (stat(path.c_str(), &looking_stat) == 0) {
+      return looking_stat.st_mode & S_IFDIR == S_IFDIR;
+    }
+
+    return false;
+  }
+
+  bool OSUtils::CreateFolder(std::string &path)
+  {
+    if (FolderExists(path)) {
+      return true;
+    }
+
+    return mkdir(path.c_str(),S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) != -1;
   }
 
 #endif

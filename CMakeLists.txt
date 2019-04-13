@@ -1,6 +1,6 @@
-# CMake entry point
-cmake_minimum_required (VERSION 3.0)
 project (petunia)
+cmake_minimum_required (VERSION 3.0)
+set (CMAKE_CXX_STANDARD 11)
 
 set(PETUNIA_SRCS
 	src/sqlite3/sqlite3.c
