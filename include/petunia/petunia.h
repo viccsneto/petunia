@@ -14,7 +14,7 @@ namespace Petunia
   class Petunia 
   {
   public:
-    explicit Petunia(std::string channel);
+    explicit Petunia(std::string& channel);
 
     void Connect();
 

@@ -3,10 +3,10 @@ cmake_minimum_required (VERSION 3.0)
 set (CMAKE_CXX_STANDARD 11)
 
 set(PETUNIA_SRCS
-	src/sqlite3/sqlite3.c
-  src/sqlite3/CppSQLite3.cpp	
+	src/sqlite3/sqlite3.c  
   src/sqlite3/sqlite3.h
-  src/sqlite3/CppSQLite3.h	
+  src/CppSQLite3/CppSQLite3.cpp	
+  src/CppSQLite3/CppSQLite3.h	
   src/message.cpp
   src/message_handler.cpp
   src/petunia.cpp

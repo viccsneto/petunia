@@ -1,4 +1,4 @@
-#include "sqlite3/CppSQLite3.h"
+#include "CppSQLite3/CppSQLite3.h"
 
 #include <assert.h>
 #include <chrono>
@@ -17,11 +17,9 @@ namespace Petunia
   class IPCMedium
   {
   public:
-    IPCMedium(std::string &channel)
+    explicit IPCMedium(std::string &channel)
     {
       InitializeDatabase(channel);
-        
-
     }
 
     void InitializeDatabase(std::string &channel)
@@ -193,7 +191,7 @@ namespace Petunia
 
   
 
-  Petunia::Petunia(std::string channel)
+  Petunia::Petunia(std::string &channel)
   : m_channel(channel)
   , m_mq_thread(nullptr)
   {
