@@ -1,5 +1,6 @@
-project (petunia)
 cmake_minimum_required (VERSION 3.0)
+project (petunia)
+
 set (CMAKE_CXX_STANDARD 11)
 
 set(PETUNIA_SRCS
@@ -17,6 +18,11 @@ set(PETUNIA_SRCS
   include/petunia/petunia.h  
 )
 
+
+enable_testing()
+
+add_subdirectory(googletest)
+
 add_library(petunia STATIC
     ${PETUNIA_SRCS}
 )
@@ -27,3 +33,5 @@ target_include_directories(petunia
   PRIVATE
     src/
 )
+
+add_subdirectory(test)

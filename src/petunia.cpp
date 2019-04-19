@@ -1,5 +1,3 @@
-#include "CppSQLite3/CppSQLite3.h"
-
 #include <assert.h>
 #include <chrono>
 #include <iostream>
@@ -8,6 +6,8 @@
 #include <petunia/petunia.h>
 #include <petunia/message.h>
 #include <petunia/osutils.h>
+
+#include "CppSQLite3/CppSQLite3.h"
 
 #define CHANNEL_PATH_SUBFOLDER "petunia/"
 #define CHANNEL_FILE_EXTENSION ".ipc.db"
@@ -140,7 +140,7 @@ namespace Petunia
       if (id_to_delete > 0) {
         BeginTransaction();
         m_delete_messages_stmt.reset();
-        m_delete_messages_stmt.bindSizeT("@row_id", id_to_delete);
+        m_delete_messages_stmt.bindInt64("@row_id", id_to_delete);
         m_delete_messages_stmt.execDML();
         Commit();
         return true;
