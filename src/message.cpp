@@ -23,7 +23,7 @@ namespace Petunia
 
   Message::Message(const char *msg_type, const char *msg_text, const char *msg_data)
   : m_msg_type(msg_type)
-  , m_msg_size(strlen(msg_data) + 1)
+  , m_msg_size(msg_data == nullptr?0:strlen(msg_data) + 1)
   , m_msg_text(msg_text)
   , m_msg_data(strdup(msg_data))
   {

@@ -9,11 +9,9 @@ set(PETUNIA_SRCS
   src/CppSQLite3/CppSQLite3.cpp	
   src/CppSQLite3/CppSQLite3.h	
   src/message.cpp
-  src/message_handler.cpp
   src/petunia.cpp
   src/osutils.cpp
   include/petunia/message.h
-  include/petunia/message_handler.h
   include/petunia/osutils.h
   include/petunia/petunia.h  
 )
