@@ -36,25 +36,25 @@ namespace Petunia
     void              ClearPromises();
 
   private:
-    Message *PollMessage();
-    std::string GenerateChannelPath();
-    bool        EnqueueReceivedMessages();
-    bool        SendEnqueuedMessages();
-    void        StartMQThread();
-    void        ThreadLoop();
-    void        TerminateMQThread();
+    Message     *PollMessage();
+    std::string  GenerateChannelPath();
+    bool         EnqueueReceivedMessages();
+    bool         SendEnqueuedMessages();
+    void         StartMQThread();
+    void         ThreadLoop();
+    void         TerminateMQThread();
     std::string GetPetuniaFolder();
     void Connect(ConnectionRole connection_role);
 
   private:
-    IPCMedium             *m_ipc_medium;
+    IPCMedium            *m_ipc_medium;
     std::string           m_channel;
     std::string           m_channel_path;
     std::queue<Message *> m_inbox_queue;
     std::queue<Message *> m_outbox_queue;
     std::mutex            m_send_lock;
     std::mutex            m_receive_lock;
-    std::thread *         m_mq_thread;
+    std::thread          *m_mq_thread;
     bool                  m_running;
     std::unordered_map<std::string, std::list<std::function<void(const Message &message)>> *> m_message_listeners;
   };

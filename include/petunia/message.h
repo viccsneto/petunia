@@ -12,11 +12,11 @@ namespace Petunia
     size_t      GetSize() const;
     const char *GetText() const;
     size_t      GetTextSize() const;
-    const void *      GetData() const;
+    const void *GetData() const;
     ~Message();
 
   private:
-    void *      m_msg_data;
+    void       *m_msg_data;
     size_t      m_msg_size;
     std::string m_msg_text;
     std::string m_msg_type;
