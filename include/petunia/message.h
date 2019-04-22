@@ -8,11 +8,11 @@ namespace Petunia
     Message(std::string msg_type, std::string msg_text, size_t msg_size, void *msg_data);
     Message(std::string msg_type, std::string msg_text, std::string msg_data);
     Message(const char *msg_type, const char *msg_text, const char *msg_data);
-    std::string GetType();
-    size_t      GetSize();
-    const char *GetText();
-    size_t      GetTextSize();
-    void *      GetData();
+    const char *GetType() const;
+    size_t      GetSize() const;
+    const char *GetText() const;
+    size_t      GetTextSize() const;
+    const void *      GetData() const;
     ~Message();
 
   private:

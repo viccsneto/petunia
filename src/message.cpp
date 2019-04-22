@@ -29,27 +29,27 @@ namespace Petunia
   {
   }
 
-  std::string Message::GetType()
+  const char *Message::GetType() const
   {
-    return m_msg_type;
+    return m_msg_type.c_str();
   }
 
-  size_t Message::GetSize()
+  size_t Message::GetSize() const
   {
     return m_msg_size;
   }
 
-  size_t Message::GetTextSize()
+  size_t Message::GetTextSize() const
   {
     return m_msg_text.size();
   }
 
-  void *Message::GetData()
+  const void *Message::GetData() const
   {
     return m_msg_data;
   }
 
-  const char *Message::GetText()
+  const char *Message::GetText() const
   {
     return m_msg_text.c_str();
   }

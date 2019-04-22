@@ -21,14 +21,14 @@ namespace Petunia
   class Petunia
   {
   public:
-    Petunia(std::string &channel, ConnectionRole role = ConnectionRole::Auto);
+    explicit Petunia(std::string &channel, ConnectionRole role = ConnectionRole::Auto);
 
     ~Petunia();
     std::string       GetID();
     void              SendMessage(Message *msg);
     std::string       GetChannel();
     size_t            Distribute();
-    size_t            AddListener(std::string& name, std::function<void(const char *text, unsigned long long size, const void *data)> listener_function);
+    size_t            AddListener(std::string& name, std::function<void(const Message &message)> listener_function);
     void              RemoveListeners(std::string& name);
     void              RemovePromises(std::string& name);
     void              Clear();
@@ -56,6 +56,6 @@ namespace Petunia
     std::mutex            m_receive_lock;
     std::thread *         m_mq_thread;
     bool                  m_running;
-    std::unordered_map<std::string, std::list<std::function<void(const char *text, unsigned long long size, const void *data)>> *> m_message_listeners;
+    std::unordered_map<std::string, std::list<std::function<void(const Message &message)>> *> m_message_listeners;
   };
 } // namespace Petunia

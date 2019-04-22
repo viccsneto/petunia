@@ -11,6 +11,7 @@
 
 #define CHANNEL_PATH_SUBFOLDER "petunia/"
 #define CHANNEL_FILE_EXTENSION ".ipc.db"
+#define MAX_CHANNEL_DELETE_TRIES 1
 
 namespace Petunia
 {
@@ -119,8 +120,15 @@ namespace Petunia
 
     ~IPCMedium()
     {
+      m_begin_transaction_stmt.finalize();
+      m_commit_transaction_stmt.finalize();
+      m_insert_message_stmt.finalize();
+      m_update_message_stmt.finalize();
+      m_delete_old_messages_stmt.finalize();
+      m_select_messages_stmt.finalize();
       m_ipc_database.close();
-      remove(m_channel.c_str());
+
+      TryDeleteChannel();
     }
 
     void BeginTransaction()
@@ -219,7 +227,7 @@ namespace Petunia
     void WriteSendingMessage(Message * message)
     {
       m_insert_message_stmt.reset();
-      m_insert_message_stmt.bind("@type", message->GetType().c_str());
+      m_insert_message_stmt.bind("@type", message->GetType());
       m_insert_message_stmt.bindSizeT("@size", message->GetSize());
       m_insert_message_stmt.bind("@text_message", (const unsigned char *)message->GetText(), message->GetTextSize());
       m_insert_message_stmt.bind("@blob_message", (const unsigned char *)message->GetData(), message->GetSize());
@@ -243,6 +251,15 @@ namespace Petunia
     ConnectionRole m_connection_role;
 
     std::string m_channel;
+
+    void TryDeleteChannel()
+    {
+      for (size_t i = 0; i < MAX_CHANNEL_DELETE_TRIES; ++i) {
+        if (remove(m_channel.c_str()) == 0) {
+          break;
+        }        
+      }
+    }
   };
     
 
@@ -362,7 +379,7 @@ namespace Petunia
       auto search = m_message_listeners.find(message->GetType());
       if (search != m_message_listeners.end()) {
         for (auto it = search->second->begin(); it != search->second->end(); ++it) {
-          (*it)(message->GetText(), message->GetSize(), message->GetData());
+          (*it)(*message);
         }
       }
 
@@ -372,12 +389,12 @@ namespace Petunia
     return count;
   }
 
-  size_t Petunia::AddListener(std::string& name, std::function<void(const char *text, unsigned long long size, const void *data)> listener_function)
+  size_t Petunia::AddListener(std::string& name, std::function<void(const Message &message)> listener_function)
   {
-    std::list <std::function<void(const char *text, unsigned long long size, const void *data)>> *list = nullptr;
+    std::list <std::function<void(const Message &message)>> *list = nullptr;
     auto search = m_message_listeners.find(name);
     if (search == m_message_listeners.end()) {
-      list = new std::list <std::function<void(const char *text, unsigned long long size, const void *data)>>();
+      list = new std::list <std::function<void(const Message &message)>>();
       m_message_listeners.insert(std::make_pair(name, list));
     }
 

@@ -12,11 +12,12 @@ TEST(PetuniaTests, PetuniaMessageSend) {
   std::promise<bool> promise;
   std::future<bool> future;
 
-  Petunia::Petunia *server = new Petunia::Petunia(channel, Petunia::Server);
-  Petunia::Petunia *client = new Petunia::Petunia(channel, Petunia::Client);
+  Petunia::Petunia *server = new Petunia::Petunia(channel, Petunia::ConnectionRole::Server);
+  Petunia::Petunia *client = new Petunia::Petunia(channel);
   server->SendMessage(new Petunia::Message(message_type.c_str(), "test", nullptr));
-  client->AddListener(message_type, [&](const char *text, unsigned long long size, const void *data) {
-    printf("Received: %s %llu 0x%p\n", text, size, data);
+  client->AddListener(message_type, [&](const Petunia::Message &message) {
+    printf("No more!!!\n");
+    printf("Received: %s %llu 0x%p\n", message.GetText(), message.GetSize(), message.GetSize());
     promise.set_value(true);
   });
 
@@ -24,8 +25,7 @@ TEST(PetuniaTests, PetuniaMessageSend) {
 
   printf("Waiting...");
   future.wait();
-  printf(" no more!\n");
-
+  
   delete client;
   delete server;
 }
