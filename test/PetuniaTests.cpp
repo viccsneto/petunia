@@ -2,10 +2,6 @@
 #include <petunia/petunia.h>
 #include <future>;
 
-TEST(PetuniaTests, HelloTest) {
-  EXPECT_TRUE(true); 
-}
-
 TEST(PetuniaTests, PetuniaMessageSend) {
   std::string channel = "test";
   std::string message_type = "test_message";
