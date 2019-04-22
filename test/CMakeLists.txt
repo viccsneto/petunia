@@ -12,7 +12,10 @@ target_link_libraries(${THIS}
   PUBLIC
     gtest_main
     petunia
+    ${CMAKE_DL_LIBS}
 )
+
+
 
 add_test(
   NAME ${THIS}
