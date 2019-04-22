@@ -1,7 +1,6 @@
 #include <assert.h>
 #include <chrono>
 #include <iostream>
-#include <list>
 
 #include <petunia/petunia.h>
 #include <petunia/message.h>

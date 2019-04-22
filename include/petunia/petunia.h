@@ -5,6 +5,7 @@
 #include <queue>
 #include <unordered_map>
 #include <functional>
+#include <list>
 
 #include "message.h"
 
