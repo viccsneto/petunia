@@ -8,24 +8,27 @@ namespace Petunia
   Message::Message(std::string msg_type, std::string msg_text, size_t msg_size, void *msg_data)
   : m_msg_type(msg_type)
   , m_msg_text(msg_text)
-  , m_msg_size(msg_size)
+  , m_data_size(msg_size)
   , m_msg_data(msg_data)
+  , m_overwrite(false)
   {
   }
 
   Message::Message(std::string msg_type, std::string msg_text, std::string msg_data)
   : m_msg_type(msg_type)
   , m_msg_text(msg_text)
-  , m_msg_size(msg_data.length() + 1)
+  , m_data_size(msg_data.length() + 1)
   , m_msg_data(strdup(msg_data.c_str()))
+  , m_overwrite(false)
   {
   }
 
   Message::Message(const char *msg_type, const char *msg_text, const char *msg_data)
   : m_msg_type(msg_type)
-  , m_msg_size(msg_data == nullptr?0:strlen(msg_data) + 1)
+  , m_data_size(msg_data == nullptr?0:strlen(msg_data) + 1)
   , m_msg_text(msg_text)
   , m_msg_data(strdup(msg_data))
+  , m_overwrite(false)
   {
   }
 
@@ -34,14 +37,24 @@ namespace Petunia
     return m_msg_type.c_str();
   }
 
-  size_t Message::GetSize() const
+  unsigned long long Message::GetDataSize() const
   {
-    return m_msg_size;
+    return m_data_size;
   }
 
-  size_t Message::GetTextSize() const
+  unsigned long long Message::GetTextSize() const
   {
     return m_msg_text.size();
+  }
+
+  void Message::SetOverwriteMode(bool overwrite) 
+  {
+    m_overwrite = overwrite;
+  }
+
+  bool Message::GetOverwriteMode()
+  {
+    return m_overwrite;
   }
 
   const void *Message::GetData() const

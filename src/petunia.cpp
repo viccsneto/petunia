@@ -29,8 +29,8 @@ namespace Petunia
     {
       m_ipc_database.open(m_channel.c_str());
 
-      m_ipc_database.execDML("PRAGMA synchronous = OFF");
-      m_ipc_database.execDML("PRAGMA journal_mode = OFF");
+      m_ipc_database.execDML("PRAGMA synchronous = ON");
+      m_ipc_database.execDML("PRAGMA journal_mode = WAL");
       m_ipc_database.execDML("PRAGMA mmap_size=44194304");
       m_ipc_database.execDML("PRAGMA busy_timeout=30000");
 
@@ -224,14 +224,25 @@ namespace Petunia
       return false;
     }
 
-    void WriteSendingMessage(Message * message)
+    void WriteSendingMessage(Message *message)
     {
+      if (message->GetOverwriteMode()) {
+        m_update_message_stmt.reset();
+        m_update_message_stmt.bind("@type", message->GetType());
+        m_update_message_stmt.bindSizeT("@size", message->GetDataSize());
+        m_update_message_stmt.bind("@text_message", (const unsigned char *)message->GetText(), message->GetTextSize());
+        m_update_message_stmt.bind("@blob_message", (const unsigned char *)message->GetData(), message->GetDataSize());
+        if (m_update_message_stmt.execDML() != 0) {
+          return;
+        }
+      }
+
       m_insert_message_stmt.reset();
       m_insert_message_stmt.bind("@type", message->GetType());
-      m_insert_message_stmt.bindSizeT("@size", message->GetSize());
+      m_insert_message_stmt.bindSizeT("@size", message->GetDataSize());
       m_insert_message_stmt.bind("@text_message", (const unsigned char *)message->GetText(), message->GetTextSize());
-      m_insert_message_stmt.bind("@blob_message", (const unsigned char *)message->GetData(), message->GetSize());
-      m_insert_message_stmt.execQuery();
+      m_insert_message_stmt.bind("@blob_message", (const unsigned char *)message->GetData(), message->GetDataSize());
+      m_insert_message_stmt.execDML();
     }
 
     ConnectionRole GetConnectionRole()
@@ -308,6 +319,12 @@ namespace Petunia
     m_outbox_queue.push(message);
   }
 
+  void Petunia::UpdateMessage(Message *message)
+  {
+    message->SetOverwriteMode(true);
+    SendMessage(message);
+  }
+
   Message *Petunia::PollMessage()
   {
     Message *message = nullptr;
@@ -345,9 +362,11 @@ namespace Petunia
     {
       bool should_sleep = !SendEnqueuedMessages();
       should_sleep = !EnqueueReceivedMessages() || should_sleep;
+
       if (should_sleep) {       
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
       }
+
       Distribute();
     }
   }

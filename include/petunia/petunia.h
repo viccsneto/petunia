@@ -26,6 +26,7 @@ namespace Petunia
     ~Petunia();
     std::string       GetID();
     void              SendMessage(Message *msg);
+    void              UpdateMessage(Message *msg);
     std::string       GetChannel();
     size_t            Distribute();
     size_t            AddListener(std::string& name, std::function<void(const Message &message)> listener_function);
