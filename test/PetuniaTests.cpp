@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <petunia/petunia.h>
-#include <future>;
+#include <future>
 
 TEST(PetuniaTests, PetuniaMessageSend) {
   std::string channel = "test";
