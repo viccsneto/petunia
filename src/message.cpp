@@ -27,7 +27,7 @@ namespace Petunia
   : m_msg_type(msg_type)
   , m_data_size(msg_data == nullptr?0:strlen(msg_data) + 1)
   , m_msg_text(msg_text)
-  , m_msg_data(strdup(msg_data))
+  , m_msg_data(msg_data == nullptr?nullptr:strdup(msg_data))
   , m_overwrite(false)
   {
   }
