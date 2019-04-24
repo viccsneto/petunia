@@ -5,6 +5,8 @@ namespace Petunia
   class Message
   {
   public:
+    Message(std::string msg_type, std::string msg_text);
+    Message(std::string msg_type, size_t msg_size, void *msg_data);
     Message(std::string msg_type, std::string msg_text, size_t msg_size, void *msg_data);
     Message(std::string msg_type, std::string msg_text, std::string msg_data);
     Message(const char *msg_type, const char *msg_text, const char *msg_data);
