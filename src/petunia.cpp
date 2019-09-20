@@ -28,8 +28,8 @@ namespace Petunia
     {
       m_ipc_database.open(m_channel.c_str());
 
-      m_ipc_database.execDML("PRAGMA synchronous = ON");
-      m_ipc_database.execDML("PRAGMA journal_mode = WAL");
+      m_ipc_database.execDML("PRAGMA synchronous = OFF");
+      m_ipc_database.execDML("PRAGMA journal_mode = OFF");
       m_ipc_database.execDML("PRAGMA mmap_size=44194304");
       m_ipc_database.execDML("PRAGMA busy_timeout=30000");
 
