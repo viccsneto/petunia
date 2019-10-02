@@ -193,7 +193,7 @@ namespace Petunia {
     if (message->GetOverwriteMode()) {
       m_update_message_stmt.reset();
       m_update_message_stmt.bind("@type", message->GetType());
-      m_update_message_stmt.bindSizeT("@size", message->GetDataSize());
+      m_update_message_stmt.bindInt64("@size", message->GetDataSize());
       m_update_message_stmt.bind("@text_message", (const unsigned char *)message->GetText(), message->GetTextSize());
       m_update_message_stmt.bind("@blob_message", (const unsigned char *)message->GetData(), message->GetDataSize());
       if (m_update_message_stmt.execDML() != 0) {
@@ -203,7 +203,7 @@ namespace Petunia {
 
     m_insert_message_stmt.reset();
     m_insert_message_stmt.bind("@type", message->GetType());
-    m_insert_message_stmt.bindSizeT("@size", message->GetDataSize());
+    m_insert_message_stmt.bindInt64("@size", message->GetDataSize());
     m_insert_message_stmt.bind("@text_message", (const unsigned char *)message->GetText(), message->GetTextSize());
     m_insert_message_stmt.bind("@blob_message", (const unsigned char *)message->GetData(), message->GetDataSize());
     m_insert_message_stmt.execDML();
