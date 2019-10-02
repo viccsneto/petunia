@@ -8,21 +8,15 @@
 #include <list>
 
 #include "message.h"
+#include "types.h"
+#include "ipc_medium.h"
 
 namespace Petunia
 {
-  class IPCMedium;
-
-  enum ConnectionRole {
-    Auto,
-    Server,
-    Client
-  };
-
   class Petunia
   {
   public:
-    explicit Petunia(std::string &channel, ConnectionRole role = ConnectionRole::Auto);
+    explicit Petunia(IPCMedium* medium);
 
     ~Petunia();
     std::string       GetID();
@@ -36,17 +30,16 @@ namespace Petunia
     void              Clear();
     void              ClearListeners();
     void              ClearPromises();
-
+    static            std::string GetPetuniaFolder();
   private:
     Message     *PollMessage();
-    std::string  GenerateChannelPath();
     bool         EnqueueReceivedMessages();
     bool         SendEnqueuedMessages();
     void         StartMQThread();
     void         ThreadLoop();
     void         TerminateMQThread();
-    std::string GetPetuniaFolder();
-    void Connect(ConnectionRole connection_role);
+    
+    void Connect();
 
   private:
     IPCMedium            *m_ipc_medium;

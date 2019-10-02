@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 #include <petunia/petunia.h>
+#include <petunia/ipc_medium_default.h>
 #include <future>
+
 
 TEST(PetuniaTests, PetuniaMessageSend) {
   std::string channel = "test";
@@ -9,8 +11,8 @@ TEST(PetuniaTests, PetuniaMessageSend) {
   std::promise<bool> promise;
   std::future<bool> future = promise.get_future();
 
-  Petunia::Petunia *server = new Petunia::Petunia(channel, Petunia::ConnectionRole::Server);
-  Petunia::Petunia *client = new Petunia::Petunia(channel);
+  Petunia::Petunia *server = new Petunia::Petunia(new Petunia::IPCMediumDefault(channel, Petunia::ConnectionRole::Server));
+  Petunia::Petunia *client = new Petunia::Petunia(new Petunia::IPCMediumDefault(channel));
  
   client->AddListener(message_type, [&](const Petunia::Message &message) {
     EXPECT_STREQ(message_content.c_str(), message.GetText());
@@ -52,8 +54,8 @@ TEST(PetuniaTests, PetuniaManyMessagesSend) {
   }
 
 
-  Petunia::Petunia *server = new Petunia::Petunia(channel, Petunia::ConnectionRole::Server);
-  Petunia::Petunia *client = new Petunia::Petunia(channel);
+  Petunia::Petunia *server = new Petunia::Petunia(new Petunia::IPCMediumDefault(channel, Petunia::ConnectionRole::Server));
+  Petunia::Petunia *client = new Petunia::Petunia(new Petunia::IPCMediumDefault(channel));
   
   client->AddListener(message_type, [&](const Petunia::Message &message) {
     EXPECT_STREQ(message_content.c_str(), message.GetText());

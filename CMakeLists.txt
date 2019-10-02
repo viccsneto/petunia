@@ -10,10 +10,15 @@ set(PETUNIA_SRCS
   src/CppSQLite3/CppSQLite3.h	
   src/message.cpp
   src/petunia.cpp
+  src/ipc_medium.cpp
+  src/ipc_medium_default.cpp
   src/osutils.cpp
+  include/petunia/ipc_medium.h
+  include/petunia/ipc_medium_default.h
   include/petunia/message.h
   include/petunia/osutils.h
-  include/petunia/petunia.h  
+  include/petunia/petunia.h
+  include/petunia/types.h
 )
 
 

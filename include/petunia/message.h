@@ -16,9 +16,8 @@ namespace Petunia
     unsigned long long  GetDataSize() const;
     const void         *GetData() const;
     ~Message();
-  private:
     void SetOverwriteMode(bool overwrite);
-    bool GetOverwriteMode();
+    bool GetOverwriteMode();    
   private:
     void       *m_msg_data;
     unsigned long long      m_data_size;
