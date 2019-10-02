@@ -30,7 +30,6 @@ namespace Petunia {
     CppSQLite3Statement m_update_message_stmt;
     CppSQLite3Statement m_delete_old_messages_stmt;
     CppSQLite3Statement m_select_messages_stmt;
-    ConnectionRole m_connection_role;
     std::string GenerateChannelPath();
     std::string m_channel_path;
     void TryDeleteChannel();

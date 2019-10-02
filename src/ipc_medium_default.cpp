@@ -15,7 +15,7 @@ namespace Petunia {
 
   void IPCMediumDefault::InitializeDatabase()
   {
-    m_ipc_database.open(m_channel.c_str());
+    m_ipc_database.open(m_channel_path.c_str());
 
     m_ipc_database.execDML("PRAGMA synchronous = OFF");
     m_ipc_database.execDML("PRAGMA journal_mode = OFF");

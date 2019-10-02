@@ -7,18 +7,10 @@ namespace Petunia
   class IPCMedium
   {
   public:
-    IPCMedium(std::string &channel, ConnectionRole connection_role)
-      : m_channel(channel)
-      , m_connection_role(connection_role)
-    {
-
-    }
+    IPCMedium(std::string &channel, ConnectionRole connection_role = ConnectionRole::Auto);
 
 
-    virtual ~IPCMedium()
-    {
-
-    }
+    virtual ~IPCMedium();
 
     virtual bool ReceiveMessages(std::queue<Message *> &inbox_queue) = 0;
     virtual bool SendMessages(std::queue<Message *> &outbox_queue) = 0;
