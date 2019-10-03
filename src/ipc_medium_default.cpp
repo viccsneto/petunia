@@ -15,6 +15,7 @@ namespace Petunia {
 
   void IPCMediumDefault::InitializeDatabase()
   {
+    TryDeleteChannel();
     m_ipc_database.open(m_channel_path.c_str());
 
     m_ipc_database.execDML("PRAGMA synchronous = OFF");
@@ -219,7 +220,7 @@ namespace Petunia {
   void IPCMediumDefault::TryDeleteChannel()
   {
     for (size_t i = 0; i < MAX_CHANNEL_DELETE_TRIES; ++i) {
-      if (remove(m_channel.c_str()) == 0) {
+      if (remove(m_channel_path.c_str()) == 0) {
         break;
       }
     }
