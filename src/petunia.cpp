@@ -85,8 +85,8 @@ namespace Petunia
       bool should_sleep = !SendEnqueuedMessages();
       should_sleep = !EnqueueReceivedMessages() || should_sleep;
 
-      if (should_sleep) {       
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      if (should_sleep) {
+        std::this_thread::sleep_for(std::chrono::nanoseconds(1));
       }
 
       Distribute();
