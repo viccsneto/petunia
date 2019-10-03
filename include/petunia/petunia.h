@@ -1,6 +1,7 @@
 #pragma once
 #include <mutex>
 #include <thread>
+#include <condition_variable>
 #include <string>
 #include <queue>
 #include <unordered_map>
@@ -36,21 +37,24 @@ namespace Petunia
     bool         EnqueueReceivedMessages();
     bool         SendEnqueuedMessages();
     void         StartMQThread();
-    void         ThreadLoop();
+    void         SendThreadLoop();
+    void         ReceiveThreadLoop();
     void         TerminateMQThread();
     
     void Connect();
 
   private:
-    IPCMedium            *m_ipc_medium;
-    std::string           m_channel;
-    std::string           m_channel_path;
-    std::queue<Message *> m_inbox_queue;
-    std::queue<Message *> m_outbox_queue;
-    std::mutex            m_send_lock;
-    std::mutex            m_receive_lock;
-    std::thread          *m_mq_thread;
-    bool                  m_running;
+    IPCMedium               *m_ipc_medium;
+    std::string              m_channel;
+    std::string              m_channel_path;
+    std::queue<Message *>    m_inbox_queue;
+    std::queue<Message *>    m_outbox_queue;
+    std::mutex               m_send_lock;
+    std::mutex               m_receive_lock;
+    std::thread             *m_mq_receive_thread;
+    std::thread             *m_mq_send_thread;
+    std::condition_variable  m_send_condition_variable;
+    bool                     m_running;
     std::unordered_map<std::string, std::list<std::function<void(const Message &message)>> *> m_message_listeners;
   };
 } // namespace Petunia

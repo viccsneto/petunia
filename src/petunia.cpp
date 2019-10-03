@@ -39,6 +39,7 @@ namespace Petunia
   {
     std::lock_guard<std::mutex> locked(m_send_lock);
     m_outbox_queue.push(message);
+    m_send_condition_variable.notify_all();
   }
 
   void Petunia::UpdateMessage(Message *message)
@@ -62,42 +63,52 @@ namespace Petunia
 
   bool Petunia::EnqueueReceivedMessages()
   {
-    std::lock_guard<std::mutex> locked(m_receive_lock);
     return m_ipc_medium->ReceiveMessages(m_inbox_queue);
   }
 
   bool Petunia::SendEnqueuedMessages()
   {
-    std::lock_guard<std::mutex> locked(m_send_lock);
     return m_ipc_medium->SendMessages(m_outbox_queue);
   }
 
   void Petunia::StartMQThread()
   {
     m_running = true;
-    m_mq_thread = new std::thread([&]() { ThreadLoop(); });
+    m_mq_receive_thread = new std::thread([&]() { ReceiveThreadLoop(); });
+    m_mq_send_thread = new std::thread([&]() { SendThreadLoop(); });
   }
 
-  void Petunia::ThreadLoop()
+  void Petunia::SendThreadLoop()
   {
     while (m_running)
     {
-      bool should_sleep = !SendEnqueuedMessages();
-      should_sleep = !EnqueueReceivedMessages() || should_sleep;
+      std::unique_lock<std::mutex> locked(m_send_lock);
+      m_send_condition_variable.wait(locked, [&] {return m_outbox_queue.size() > 0 || !m_running;});
+      SendEnqueuedMessages();
+    }
+  }
 
-      if (should_sleep) {
+  void Petunia::ReceiveThreadLoop()
+  {
+    while (m_running)
+    {
+      std::unique_lock<std::mutex> locked(m_receive_lock);
+      if (!EnqueueReceivedMessages()) {
         std::this_thread::sleep_for(std::chrono::nanoseconds(1));
+      } else {
+        Distribute();
       }
-
-      Distribute();
     }
   }
 
   void Petunia::TerminateMQThread()
   {
     m_running = false;
-    m_mq_thread->join();
-    delete m_mq_thread;
+    m_send_condition_variable.notify_all();
+    m_mq_receive_thread->join();
+    m_mq_send_thread->join();
+    delete m_mq_receive_thread;
+    delete m_mq_send_thread;
   }
 
   std::string Petunia::GetPetuniaFolder()
@@ -120,7 +131,6 @@ namespace Petunia
 
   size_t Petunia::Distribute()
   {
-    std::lock_guard<std::mutex> locked(m_receive_lock);
     size_t count = m_inbox_queue.size();
     while (!m_inbox_queue.empty()) {
       Message *message = m_inbox_queue.front();
