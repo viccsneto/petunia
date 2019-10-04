@@ -36,7 +36,7 @@ namespace Petunia {
   {
     std::lock_guard<std::mutex> lock(s_to_server_lock);
     if (s_to_server_messages.find(m_channel) == s_to_server_messages.end()) {
-      s_to_server_messages.insert_or_assign(m_channel, new std::queue<Message *>());
+      s_to_server_messages.insert(std::make_pair(m_channel, new std::queue<Message *>()));
     }
   }
 
@@ -44,7 +44,7 @@ namespace Petunia {
   {
     std::lock_guard<std::mutex> lock(s_to_client_lock);
     if (s_to_client_messages.find(m_channel) == s_to_client_messages.end()) {
-      s_to_client_messages.insert_or_assign(m_channel, new std::queue<Message *>());
+      s_to_client_messages.insert(std::make_pair(m_channel, new std::queue<Message *>()));
     }
   }
 
