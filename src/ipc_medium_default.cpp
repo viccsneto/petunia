@@ -15,7 +15,6 @@ namespace Petunia {
 
   void IPCMediumDefault::InitializeDatabase()
   {
-    TryDeleteChannel();
     m_ipc_database.open(m_channel_path.c_str());
 
     m_ipc_database.execDML("PRAGMA synchronous = OFF");
@@ -58,7 +57,9 @@ namespace Petunia {
     m_select_messages_stmt.finalize();
     m_ipc_database.close();
 
-    TryDeleteChannel();
+    if (m_connection_role == ConnectionRole::Server) {
+      TryDeleteChannel();
+    }
   }
 
   void IPCMediumDefault::CreateStatements()
