@@ -28,7 +28,7 @@ namespace Petunia
   {
     struct stat looking_stat;
     if (stat(path.c_str(), &looking_stat) == 0) {
-      return looking_stat.st_mode & _S_IFREG == _S_IFREG;
+      return (looking_stat.st_mode & _S_IFREG) == _S_IFREG;
     }
 
     return false;
@@ -38,7 +38,7 @@ namespace Petunia
   {
     struct stat looking_stat;
     if (stat(path.c_str(), &looking_stat) == 0) {
-      return looking_stat.st_mode & _S_IFDIR == _S_IFDIR;
+      return (looking_stat.st_mode & _S_IFDIR) == _S_IFDIR;
     }
 
     return false;
@@ -59,7 +59,7 @@ namespace Petunia
   {
     struct stat looking_stat;
     if (stat(path.c_str(), &looking_stat) == 0) {
-      return looking_stat.st_mode & S_IFREG == S_IFREG;
+      return (looking_stat.st_mode & S_IFREG) == S_IFREG;
     }
 
     return false;
@@ -69,7 +69,7 @@ namespace Petunia
   {
     struct stat looking_stat;
     if (stat(path.c_str(), &looking_stat) == 0) {
-      return looking_stat.st_mode & S_IFDIR == S_IFDIR;
+      return (looking_stat.st_mode & S_IFDIR) == S_IFDIR;
     }
 
     return false;
