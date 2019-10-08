@@ -7,8 +7,6 @@
 #include <petunia/message.h>
 #include <petunia/osutils.h>
 
-#include "CppSQLite3/CppSQLite3.h"
-
 #define CHANNEL_PATH_SUBFOLDER "petunia/"
 
 namespace Petunia
