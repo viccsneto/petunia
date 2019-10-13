@@ -35,30 +35,17 @@ namespace Petunia
     return m_channel;
   }
 
-  void Petunia::SendMessage(Message *message)
+  void Petunia::SendMessage(std::shared_ptr<Message> message)
   {
     std::lock_guard<std::mutex> locked(m_send_lock);
     m_outbox_queue.push(message);
     m_send_condition_variable.notify_all();
   }
 
-  void Petunia::UpdateMessage(Message *message)
+  void Petunia::UpdateMessage(std::shared_ptr<Message> message)
   {
     message->SetOverwriteMode(true);
     SendMessage(message);
-  }
-
-  Message *Petunia::PollMessage()
-  {
-    Message *message = nullptr;
-  
-    if (!m_inbox_queue.empty())
-    {
-      message = m_inbox_queue.front();
-      m_inbox_queue.pop();
-    }
-
-    return message;
   }
 
   bool Petunia::EnqueueReceivedMessages()
@@ -133,27 +120,25 @@ namespace Petunia
   {
     size_t count = m_inbox_queue.size();
     while (!m_inbox_queue.empty()) {
-      Message *message = m_inbox_queue.front();
+      std::shared_ptr<Message> message = m_inbox_queue.front();
       m_inbox_queue.pop();
       auto search = m_message_listeners.find(message->GetType());
       if (search != m_message_listeners.end()) {
         for (auto it = search->second->begin(); it != search->second->end(); ++it) {
-          (*it)(*message);
+          (*it)(message);
         }
       }
-
-      delete message;
     }
     
     return count;
   }
 
-  size_t Petunia::AddListener(std::string& name, std::function<void(const Message &message)> listener_function)
+  size_t Petunia::AddListener(std::string& name, std::function<void(std::shared_ptr<Message> message)> listener_function)
   {
-    std::list <std::function<void(const Message &message)>> *list = nullptr;
+    std::list <std::function<void(std::shared_ptr<Message> message)>> *list = nullptr;
     auto search = m_message_listeners.find(name);
     if (search == m_message_listeners.end()) {
-      list = new std::list <std::function<void(const Message &message)>>();
+      list = new std::list <std::function<void(std::shared_ptr<Message> message)>>();
       m_message_listeners.insert(std::make_pair(name, list));
     }
 

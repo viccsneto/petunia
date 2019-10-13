@@ -12,8 +12,8 @@ namespace Petunia
 
     virtual ~IPCMedium();
 
-    virtual bool ReceiveMessages(std::queue<Message *> &inbox_queue) = 0;
-    virtual bool SendMessages(std::queue<Message *> &outbox_queue) = 0;
+    virtual bool ReceiveMessages(std::queue<std::shared_ptr<Message>> &inbox_queue) = 0;
+    virtual bool SendMessages(std::queue<std::shared_ptr<Message>> &outbox_queue) = 0;
     ConnectionRole GetConnectionRole();
   protected:
     std::string m_channel;

@@ -133,22 +133,15 @@ namespace Petunia {
     m_commit_transaction_stmt.execDML();
   }
 
-  Message * IPCMediumDefault::CreateMessageFromRow(CppSQLite3Query &received_messages)
+  std::shared_ptr<Message> IPCMediumDefault::CreateMessageFromRow(CppSQLite3Query &received_messages)
   {
-    size_t size = received_messages.getSizeTField("size");
-    void *buffer = malloc(size);
-    if (!buffer) {
-      printf("PANIC!\n");
-      assert(false);
-      exit(-1);
-    }
+    int size = received_messages.getSizeTField("size");
+    std::shared_ptr<std::string> buffer = std::make_shared<std::string>();    
+    const unsigned char *message = received_messages.getBlobField("blob_message", size);
+    buffer->reserve(size);
+    memcpy((void *)buffer->data(), message, size);
 
-    int nSize;
-    const unsigned char *message = received_messages.getBlobField("blob_message", nSize);
-    assert(size == nSize);
-    memcpy(buffer, message, size);
-
-    return new Message(std::string(received_messages.getStringField("type")), std::string(received_messages.getStringField("text_message")), size, buffer);
+    return std::make_shared<Message>(std::string(received_messages.getStringField("type")), std::make_shared<std::string>(received_messages.getStringField("text_message")), size, buffer);
   }
 
   CppSQLite3Query IPCMediumDefault::QueryReceivedMessages()
@@ -168,7 +161,7 @@ namespace Petunia {
     Commit();
   }
 
-  bool IPCMediumDefault::SendMessages(std::queue<Message *> &outbox_queue)
+  bool IPCMediumDefault::SendMessages(std::queue<std::shared_ptr<Message>> &outbox_queue)
   {
     if (!outbox_queue.empty())
     {
@@ -176,12 +169,11 @@ namespace Petunia {
       BeginTransaction();
       while (!outbox_queue.empty())
       {
-        Message *message = outbox_queue.front();
+        std::shared_ptr<Message> message = outbox_queue.front();
 
         WriteSendingMessage(message);
 
         outbox_queue.pop();
-        delete message;
       }
       Commit();
       return true;
@@ -190,14 +182,17 @@ namespace Petunia {
     return false;
   }
 
-  void IPCMediumDefault::WriteSendingMessage(Message *message)
+  void IPCMediumDefault::WriteSendingMessage(std::shared_ptr<Message> message)
   {
     if (message->GetOverwriteMode()) {
       m_update_message_stmt.reset();
       m_update_message_stmt.bind("@type", message->GetType());
-      m_update_message_stmt.bindInt64("@size", message->GetDataSize());
-      m_update_message_stmt.bind("@text_message", (const unsigned char *)message->GetText(), message->GetTextSize());
-      m_update_message_stmt.bind("@blob_message", (const unsigned char *)message->GetData(), message->GetDataSize());
+      unsigned long long size = message->GetDataSize();
+      m_update_message_stmt.bindInt64("@size", size);
+      std::shared_ptr<std::string> text = message->GetText();
+      m_update_message_stmt.bind("@text_message", (const unsigned char *)text->c_str(), text->size());
+      std::shared_ptr<void> data = message->GetData();
+      m_update_message_stmt.bind("@blob_message", (const unsigned char *)data.get(), size);
       if (m_update_message_stmt.execDML() != 0) {
         return;
       }
@@ -206,8 +201,9 @@ namespace Petunia {
     m_insert_message_stmt.reset();
     m_insert_message_stmt.bind("@type", message->GetType());
     m_insert_message_stmt.bindInt64("@size", message->GetDataSize());
-    m_insert_message_stmt.bind("@text_message", (const unsigned char *)message->GetText(), message->GetTextSize());
-    m_insert_message_stmt.bind("@blob_message", (const unsigned char *)message->GetData(), message->GetDataSize());
+    std::shared_ptr<std::string> text = message->GetText();
+    m_insert_message_stmt.bind("@text_message", (const unsigned char *)text->c_str(), text->size());
+    m_insert_message_stmt.bind("@blob_message", (const unsigned char *)message->GetData().get(), message->GetDataSize());
     m_insert_message_stmt.execDML();
   }
 
@@ -227,7 +223,7 @@ namespace Petunia {
     }
   }
 
-  bool IPCMediumDefault::ReceiveMessages(std::queue<Message *> &inbox_queue)
+  bool IPCMediumDefault::ReceiveMessages(std::queue<std::shared_ptr<Message>> &inbox_queue)
   {
     unsigned long long delete_reference_id = 0;
 
@@ -236,7 +232,7 @@ namespace Petunia {
     while (!received_messages.eof()) {
       delete_reference_id = received_messages.getInt64Field("row_id");
 
-      Message *message = CreateMessageFromRow(received_messages);
+      std::shared_ptr<Message> message = CreateMessageFromRow(received_messages);
 
       inbox_queue.push(message);
       received_messages.nextRow();

@@ -10,17 +10,17 @@ namespace Petunia {
   public:
     IPCMediumDefault(std::string &channel, ConnectionRole connection_role = ConnectionRole::Auto);
     ~IPCMediumDefault();
-    bool ReceiveMessages(std::queue<Message *> &inbox_queue) override;
-    bool SendMessages(std::queue<Message *> &outbox_queue) override;
+    bool ReceiveMessages(std::queue<std::shared_ptr<Message>> &inbox_queue) override;
+    bool SendMessages(std::queue<std::shared_ptr<Message>> &outbox_queue) override;
   private:
     void InitializeDatabase();
     void CreateStatements();
     void BeginTransaction();
     void Commit();
-    Message *CreateMessageFromRow(CppSQLite3Query &received_messages);
+    std::shared_ptr<Message> CreateMessageFromRow(CppSQLite3Query &received_messages);
     CppSQLite3Query QueryReceivedMessages();
     void DeleteOldMessages(unsigned long long reference_id);
-    void WriteSendingMessage(Message *message);
+    void WriteSendingMessage(std::shared_ptr<Message> message);
   private:
     CppSQLite3DB m_ipc_database;
     CppSQLite3Statement m_begin_transaction_stmt;

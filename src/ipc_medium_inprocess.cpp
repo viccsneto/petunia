@@ -2,8 +2,8 @@
 #include <assert.h>
 
 namespace Petunia {
-  std::unordered_map<std::string, std::queue<Message *> *> IPCMediumInprocess::s_to_server_messages;
-  std::unordered_map<std::string, std::queue<Message *> *> IPCMediumInprocess::s_to_client_messages;
+  std::unordered_map<std::string, std::queue<std::shared_ptr<Message>> *> IPCMediumInprocess::s_to_server_messages;
+  std::unordered_map<std::string, std::queue<std::shared_ptr<Message>> *> IPCMediumInprocess::s_to_client_messages;
   std::mutex IPCMediumInprocess::s_to_server_lock;
   std::mutex IPCMediumInprocess::s_to_client_lock;
 
@@ -18,7 +18,7 @@ namespace Petunia {
   {
   }
 
-  bool IPCMediumInprocess::SendMessages(std::queue<Message *> &outbox_queue)
+  bool IPCMediumInprocess::SendMessages(std::queue<std::shared_ptr<Message>> &outbox_queue)
   {
     std::lock_guard<std::mutex> lock(*m_send_lock);
     auto send_queue_it = m_send_messages_map->find(m_channel);
@@ -36,7 +36,7 @@ namespace Petunia {
   {
     std::lock_guard<std::mutex> lock(s_to_server_lock);
     if (s_to_server_messages.find(m_channel) == s_to_server_messages.end()) {
-      s_to_server_messages.insert(std::make_pair(m_channel, new std::queue<Message *>()));
+      s_to_server_messages.insert(std::make_pair(m_channel, new std::queue<std::shared_ptr<Message>>()));
     }
   }
 
@@ -44,11 +44,11 @@ namespace Petunia {
   {
     std::lock_guard<std::mutex> lock(s_to_client_lock);
     if (s_to_client_messages.find(m_channel) == s_to_client_messages.end()) {
-      s_to_client_messages.insert(std::make_pair(m_channel, new std::queue<Message *>()));
+      s_to_client_messages.insert(std::make_pair(m_channel, new std::queue<std::shared_ptr<Message>>()));
     }
   }
 
-  bool IPCMediumInprocess::ReceiveMessages(std::queue<Message *> &inbox_queue)
+  bool IPCMediumInprocess::ReceiveMessages(std::queue<std::shared_ptr<Message>> &inbox_queue)
   {
     std::lock_guard<std::mutex> lock(*m_receive_lock);
     auto receive_queue_it = m_receive_messages_map->find(m_channel);

@@ -21,11 +21,11 @@ namespace Petunia
 
     ~Petunia();
     std::string       GetID();
-    void              SendMessage(Message *msg);
-    void              UpdateMessage(Message *msg);
+    void              SendMessage(std::shared_ptr<Message> msg);
+    void              UpdateMessage(std::shared_ptr<Message> msg);
     std::string       GetChannel();
     size_t            Distribute();
-    size_t            AddListener(std::string& name, std::function<void(const Message &message)> listener_function);
+    size_t            AddListener(std::string& name, std::function<void(std::shared_ptr<Message> message)> listener_function);
     void              RemoveListeners(std::string& name);
     void              RemovePromises(std::string& name);
     void              Clear();
@@ -33,7 +33,6 @@ namespace Petunia
     void              ClearPromises();
     static            std::string GetPetuniaFolder();
   private:
-    Message     *PollMessage();
     bool         EnqueueReceivedMessages();
     bool         SendEnqueuedMessages();
     void         StartMQThread();
@@ -47,14 +46,14 @@ namespace Petunia
     IPCMedium               *m_ipc_medium;
     std::string              m_channel;
     std::string              m_channel_path;
-    std::queue<Message *>    m_inbox_queue;
-    std::queue<Message *>    m_outbox_queue;
+    std::queue<std::shared_ptr<Message>>    m_inbox_queue;
+    std::queue<std::shared_ptr<Message>>    m_outbox_queue;
     std::mutex               m_send_lock;
     std::mutex               m_receive_lock;
     std::thread             *m_mq_receive_thread;
     std::thread             *m_mq_send_thread;
     std::condition_variable  m_send_condition_variable;
     bool                     m_running;
-    std::unordered_map<std::string, std::list<std::function<void(const Message &message)>> *> m_message_listeners;
+    std::unordered_map<std::string, std::list<std::function<void(std::shared_ptr<Message> message)>> *> m_message_listeners;
   };
 } // namespace Petunia

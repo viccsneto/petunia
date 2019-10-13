@@ -5,65 +5,40 @@
 
 namespace Petunia
 {
-  Message::Message(std::string msg_type, std::string msg_text, size_t msg_size, void *msg_data)
-  : m_msg_type(msg_type)
-  , m_msg_text(msg_text)
-  , m_data_size(msg_size)
-  , m_msg_data(msg_data)
-  , m_overwrite(false)
-  {
-  }
-
-  Message::Message(std::string msg_type, std::string msg_text)
+  Message::Message(std::string msg_type, std::shared_ptr<std::string> msg_text)
   : m_msg_type(msg_type)
   , m_msg_text(msg_text)
   , m_data_size(0)
-  , m_msg_data(nullptr)
   , m_overwrite(false)
   {
   }
 
-  Message::Message(std::string msg_type,  size_t msg_size, void *msg_data)
+  Message::Message(std::string msg_type,  size_t msg_size, std::shared_ptr<std::string> msg_data)
     : m_msg_type(msg_type)
-    , m_msg_text("")
     , m_data_size(msg_size)
     , m_msg_data(msg_data)
     , m_overwrite(false)
   {
   }
 
-  Message::Message(std::string msg_type, std::string msg_text, std::string msg_data)
+  Message::Message(std::string msg_type, std::shared_ptr<std::string> msg_text, size_t msg_size, std::shared_ptr<std::string> msg_data)
     : m_msg_type(msg_type)
     , m_msg_text(msg_text)
-    , m_data_size(msg_data.length() + 1)
-    , m_msg_data(strdup(msg_data.c_str()))
+    , m_data_size(msg_size)
+    , m_msg_data(msg_data)
     , m_overwrite(false)
   {
+
   }
 
-
-  Message::Message(const char *msg_type, const char *msg_text, const char *msg_data)
-  : m_msg_type(msg_type)
-  , m_data_size(msg_data == nullptr?0:strlen(msg_data) + 1)
-  , m_msg_text(msg_text)
-  , m_msg_data(msg_data == nullptr?nullptr:strdup(msg_data))
-  , m_overwrite(false)
-  {
-  }
-
-  const char *Message::GetType() const
+  const char *Message::GetType()
   {
     return m_msg_type.c_str();
   }
 
-  unsigned long long Message::GetDataSize() const
+  unsigned long long Message::GetDataSize()
   {
     return m_data_size;
-  }
-
-  unsigned long long Message::GetTextSize() const
-  {
-    return m_msg_text.size();
   }
 
   void Message::SetOverwriteMode(bool overwrite) 
@@ -76,18 +51,18 @@ namespace Petunia
     return m_overwrite;
   }
 
-  const void *Message::GetData() const
+  std::shared_ptr<void> Message::GetData()
   {
     return m_msg_data;
   }
 
-  const char *Message::GetText() const
+  std::shared_ptr<std::string> Message::GetText() 
   {
-    return m_msg_text.c_str();
+    return m_msg_text;
   }
 
   Message::~Message()
   {
-    free(m_msg_data);
+    
   }
 } // namespace Petunia
