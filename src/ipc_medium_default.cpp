@@ -2,18 +2,51 @@
 #include <petunia/petunia.h>
 #include <petunia/osutils.h>
 #include <assert.h>
+#include <sqlite3/CppSQLite3.h>
+
 #define CHANNEL_FILE_EXTENSION ".ipc.db"
 #define MAX_CHANNEL_DELETE_TRIES 1
 
 namespace Petunia {
-  IPCMediumDefault::IPCMediumDefault(std::string &channel, ConnectionRole connection_role /*= ConnectionRole::Auto*/)
+  class IPCInternalMedium : public IPCMedium
+  {
+  public:
+    IPCInternalMedium(std::string &channel, ConnectionRole connection_role = ConnectionRole::Auto);
+    ~IPCInternalMedium();
+    bool ReceiveMessages(std::queue<std::shared_ptr<Message>> &inbox_queue) override;
+    bool SendMessages(std::queue<std::shared_ptr<Message>> &outbox_queue) override;
+
+  private:
+    void InitializeDatabase();
+    void CreateStatements();
+    void BeginTransaction();
+    void Commit();
+    std::shared_ptr<Message> CreateMessageFromRow(CppSQLite3Query &received_messages);
+    CppSQLite3Query QueryReceivedMessages();
+    void DeleteOldMessages(unsigned long long reference_id);
+    void WriteSendingMessage(std::shared_ptr<Message> message);
+  private:
+    CppSQLite3DB m_ipc_database;
+    CppSQLite3Statement m_begin_transaction_stmt;
+    CppSQLite3Statement m_commit_transaction_stmt;
+
+    CppSQLite3Statement m_insert_message_stmt;
+    CppSQLite3Statement m_update_message_stmt;
+    CppSQLite3Statement m_delete_old_messages_stmt;
+    CppSQLite3Statement m_select_messages_stmt;
+    std::string GenerateChannelPath();
+    std::string m_channel_path;
+    void TryDeleteChannel();
+  };
+
+  IPCInternalMedium::IPCInternalMedium(std::string &channel, ConnectionRole connection_role /*= ConnectionRole::Auto*/)
     :IPCMedium(channel, connection_role)
   {
     m_channel_path = GenerateChannelPath();
     InitializeDatabase();
   }
 
-  void IPCMediumDefault::InitializeDatabase()
+  void IPCInternalMedium::InitializeDatabase()
   {
     m_ipc_database.open(m_channel_path.c_str());
 
@@ -47,7 +80,7 @@ namespace Petunia {
     CreateStatements();
   }
 
-  IPCMediumDefault::~IPCMediumDefault()
+  IPCInternalMedium::~IPCInternalMedium()
   {
     m_begin_transaction_stmt.finalize();
     m_commit_transaction_stmt.finalize();
@@ -62,7 +95,7 @@ namespace Petunia {
     }
   }
 
-  void IPCMediumDefault::CreateStatements()
+  void IPCInternalMedium::CreateStatements()
   {
     m_begin_transaction_stmt = m_ipc_database.compileStatement("BEGIN TRANSACTION");
     m_commit_transaction_stmt = m_ipc_database.compileStatement("COMMIT");
@@ -121,19 +154,19 @@ namespace Petunia {
     }
   }
 
-  void IPCMediumDefault::BeginTransaction()
+  void IPCInternalMedium::BeginTransaction()
   {
     m_begin_transaction_stmt.reset();
     m_begin_transaction_stmt.execDML();
   }
 
-  void IPCMediumDefault::Commit()
+  void IPCInternalMedium::Commit()
   {
     m_commit_transaction_stmt.reset();
     m_commit_transaction_stmt.execDML();
   }
 
-  std::shared_ptr<Message> IPCMediumDefault::CreateMessageFromRow(CppSQLite3Query &received_messages)
+  std::shared_ptr<Message> IPCInternalMedium::CreateMessageFromRow(CppSQLite3Query &received_messages)
   {
     int size = received_messages.getSizeTField("size");
     std::shared_ptr<std::string> buffer = std::make_shared<std::string>();    
@@ -144,7 +177,7 @@ namespace Petunia {
     return std::make_shared<Message>(std::string(received_messages.getStringField("type")), std::make_shared<std::string>(received_messages.getStringField("text_message")), size, buffer);
   }
 
-  CppSQLite3Query IPCMediumDefault::QueryReceivedMessages()
+  CppSQLite3Query IPCInternalMedium::QueryReceivedMessages()
   {
     m_select_messages_stmt.reset();
     CppSQLite3Query query_result = m_select_messages_stmt.execQuery();
@@ -152,7 +185,7 @@ namespace Petunia {
     return query_result;
   }
 
-  void IPCMediumDefault::DeleteOldMessages(unsigned long long reference_id)
+  void IPCInternalMedium::DeleteOldMessages(unsigned long long reference_id)
   {
     BeginTransaction();
     m_delete_old_messages_stmt.reset();
@@ -161,7 +194,7 @@ namespace Petunia {
     Commit();
   }
 
-  bool IPCMediumDefault::SendMessages(std::queue<std::shared_ptr<Message>> &outbox_queue)
+  bool IPCInternalMedium::SendMessages(std::queue<std::shared_ptr<Message>> &outbox_queue)
   {
     if (!outbox_queue.empty())
     {
@@ -182,7 +215,7 @@ namespace Petunia {
     return false;
   }
 
-  void IPCMediumDefault::WriteSendingMessage(std::shared_ptr<Message> message)
+  void IPCInternalMedium::WriteSendingMessage(std::shared_ptr<Message> message)
   {
     if (message->GetOverwriteMode()) {
       m_update_message_stmt.reset();
@@ -207,14 +240,14 @@ namespace Petunia {
     m_insert_message_stmt.execDML();
   }
 
-  std::string IPCMediumDefault::GenerateChannelPath()
+  std::string IPCInternalMedium::GenerateChannelPath()
   {
     std::string petunia_folder_path = Petunia::GetPetuniaFolder();
 
     return petunia_folder_path + m_channel + CHANNEL_FILE_EXTENSION;
   }
 
-  void IPCMediumDefault::TryDeleteChannel()
+  void IPCInternalMedium::TryDeleteChannel()
   {
     for (size_t i = 0; i < MAX_CHANNEL_DELETE_TRIES; ++i) {
       if (remove(m_channel_path.c_str()) == 0) {
@@ -223,7 +256,7 @@ namespace Petunia {
     }
   }
 
-  bool IPCMediumDefault::ReceiveMessages(std::queue<std::shared_ptr<Message>> &inbox_queue)
+  bool IPCInternalMedium::ReceiveMessages(std::queue<std::shared_ptr<Message>> &inbox_queue)
   {
     unsigned long long delete_reference_id = 0;
 
@@ -246,4 +279,25 @@ namespace Petunia {
 
     return false;
   }
+
+  IPCMediumDefault::IPCMediumDefault(std::string &channel, ConnectionRole connection_role /*= ConnectionRole::Auto*/)
+    :IPCMedium(channel, connection_role)
+  {
+    m_internal_medium = std::make_unique<IPCInternalMedium>(channel, connection_role);
+  }
+
+  IPCMediumDefault::~IPCMediumDefault()
+  {
+  }
+
+  bool IPCMediumDefault::ReceiveMessages(std::queue<std::shared_ptr<Message>> &inbox_queue)
+  {
+    return m_internal_medium->ReceiveMessages(inbox_queue);
+  }
+
+  bool IPCMediumDefault::SendMessages(std::queue<std::shared_ptr<Message>> &outbox_queue)
+  {
+    return m_internal_medium->SendMessages(outbox_queue);
+  }
+
 }

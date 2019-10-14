@@ -1,13 +1,13 @@
-cmake_minimum_required (VERSION 3.0)
+cmake_minimum_required (VERSION 3.14)
 project (petunia)
-
 set (CMAKE_CXX_STANDARD 11)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+add_subdirectory(third_party)
+
+
 
 set(PETUNIA_SRCS
-	src/sqlite3/sqlite3.c  
-  src/sqlite3/sqlite3.h
-  src/CppSQLite3/CppSQLite3.cpp	
-  src/CppSQLite3/CppSQLite3.h	
   src/message.cpp
   src/petunia.cpp
   src/ipc_medium.cpp
@@ -34,9 +34,18 @@ add_library(petunia STATIC
 
 target_include_directories(petunia
   PUBLIC
-    include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
   PRIVATE
     src/
 )
 
+target_link_libraries(petunia PRIVATE
+  sqlite3
+  nanomsg
+)
+
+
+
 add_subdirectory(test)
+
+

@@ -1,5 +1,4 @@
 #pragma once
-#include "CppSQLite3.h"
 #include "ipc_medium.h"
 #include "message.h"
 #include <queue>
