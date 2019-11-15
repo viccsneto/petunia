@@ -5,7 +5,10 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 add_subdirectory(third_party)
 
-
+target_compile_definitions(nanomsg
+PUBLIC
+  -DNN_STATIC_LIB
+) 
 
 set(PETUNIA_SRCS
   src/message.cpp
@@ -13,10 +16,12 @@ set(PETUNIA_SRCS
   src/ipc_medium.cpp
   src/ipc_medium_default.cpp
   src/ipc_medium_inprocess.cpp
+  src/ipc_medium_nanomsg.cpp
   src/osutils.cpp
   include/petunia/ipc_medium.h
   include/petunia/ipc_medium_default.h
   include/petunia/ipc_medium_inprocess.h
+  include/petunia/ipc_medium_nanomsg.h
   include/petunia/message.h
   include/petunia/osutils.h
   include/petunia/petunia.h
@@ -39,12 +44,12 @@ target_include_directories(petunia
     src/
 )
 
+
+
 target_link_libraries(petunia PRIVATE
   sqlite3
   nanomsg
 )
-
-
 
 add_subdirectory(test)
 

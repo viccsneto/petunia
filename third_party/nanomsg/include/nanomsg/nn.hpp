@@ -147,18 +147,6 @@ namespace nn
             return rc;
         }
 
-        inline int send(const char *msg_type, void *buf, size_t len, int flags)
-        {
-          int msg_type_len = strlen(msg_type) + 1;
-          int total_len = msg_type_len + len;
-          char *new_buf = (char *)malloc(total_len);
-          sprintf(new_buf, "%s\0", msg_type);
-          memmove(new_buf + msg_type_len, buf, len);
-          int rc = send(new_buf,  total_len, flags);
-          free(new_buf);
-          return rc;
-        }
-
         inline int recv (void *buf, size_t len, int flags)
         {
             int rc = nn_recv (s, buf, len, flags);
@@ -169,24 +157,7 @@ namespace nn
             }
             return rc;
         }
-        
-        inline int recv(char **msg_type, void *buf, size_t len, int flags)
-        {          
-          int rc = recv(buf, len, flags);
-          
-          if (rc > 0) {                        
-            int msg_type_len = strlen((const char *)buf);
-            free(*msg_type);
-            *msg_type = (char *)malloc(msg_type_len + 1);
-            sprintf(*msg_type, "%s", (const char *)buf);
-            
-            int msg_position = msg_type_len + 1;               
-            rc -= msg_position;
-            memmove(buf, (const char *)buf + msg_position, rc);
-          }
-          return rc;
-        }
-
+               
         inline int sendmsg (const struct nn_msghdr *msghdr, int flags)
         {
             int rc = nn_sendmsg (s, msghdr, flags);
