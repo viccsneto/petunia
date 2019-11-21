@@ -15,10 +15,10 @@ namespace Petunia {
     {      
       m_nano_socket = std::make_unique<nn::socket>(AF_SP, NN_PAIR);
       if (connection_role == ConnectionRole::Server) {
-        m_nano_socket->bind((std::string("ipc://") + channel).c_str());
+        m_nano_socket->bind((std::string("ipc:///") + channel).c_str());
       }
       else {
-        m_nano_socket->connect((std::string("ipc://") + channel).c_str());
+        m_nano_socket->connect((std::string("ipc:///") + channel).c_str());
       }
     }
     
@@ -34,7 +34,7 @@ namespace Petunia {
           std::shared_ptr<Message> message = outbox_queue.front();
           
           m_nano_socket->send((const void *)message.get()->GetType(), strlen(message.get()->GetType()), 0);
-          m_nano_socket->send((const void *)message.get()->GetText()->c_str(), message->GetText()->size(), 0);
+          m_nano_socket->send(message.get()->GetData().get(), message->GetDataSize(), 0);
         
           outbox_queue.pop();
         }
@@ -47,23 +47,26 @@ namespace Petunia {
     
     bool ReceiveMessages(std::queue<std::shared_ptr<Message>> &inbox_queue)
     {
+#if 0
       bool result = false;
-     
-      while (int rc = m_nano_socket->recv(nullptr, 0, 0) > 0) {
+      nn_msghdr header;
+      while (int rc = m_nano_socket->recvmsg(&header, 0) > 0) {        
         std::string message_type;
-        message_type.reserve(rc);
-        rc = m_nano_socket->recv((void *)message_type.data(), rc, 0);
-        rc = m_nano_socket->recv(nullptr, 0, 0);
-        std::shared_ptr<std::string> data = std::make_shared<std::string>();
-        data->reserve(rc);
-        rc = m_nano_socket->recv((void *)data->data(), rc, 0);
-        
-        inbox_queue.push(std::make_shared<Message>(message_type, data));
-        
+        message_type.reserve(header.msg_controllen);
+        m_nano_socket->recv((void *)message_type.data(), header.msg_controllen, 0);
+        nn_msghdr msgbody;
+        if (m_nano_socket->recvmsg(&msgbody, 0) > 0) {
+          std::shared_ptr<std::string> data = std::make_shared<std::string>();
+          data->reserve(msgbody.msg_controllen);
+          m_nano_socket->recv((void *)data->data(), msgbody.msg_controllen, 0);
+          inbox_queue.push(std::make_shared<Message>(message_type, msgbody.msg_controllen, data));
+        }
         result = true;
       }
 
       return result;
+#endif        
+      return false;
     }
   private:
     std::unique_ptr<nn::socket> m_nano_socket;

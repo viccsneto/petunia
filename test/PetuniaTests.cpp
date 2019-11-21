@@ -10,10 +10,10 @@
 // Separate the name and the underscore together to enable test:
 #define ENABLED_EXAMPLE_TEST _
 
-#define MESSAGE_SEND_INPROCESS_
-#define MESSAGE_SEND_NANOMSG _
+#define MESSAGE_SEND_INPROCESS _
+#define MESSAGE_SEND_NANOMSG_
 #define MESSAGE_SEND_DEFAULT_
-#define MESSAGE_MANY_SEND_INPROCESS_
+#define MESSAGE_MANY_SEND_INPROCESS _
 #define MESSAGE_MANY_SEND_NANOMSG_
 #define MESSAGE_MANY_SEND_DEFAULT_
 
@@ -32,14 +32,14 @@ TEST(PetuniaTests, PetuniaMessageSendInProcess) {
   Petunia::Petunia *client = new Petunia::Petunia(new Petunia::IPCMediumInprocess(channel, Petunia::ConnectionRole::Client));
 
   client->AddListener(message_type, [&](std::shared_ptr<Petunia::Message> message) {
-    EXPECT_STREQ(message_content->c_str(), message->GetText()->c_str());
+    EXPECT_STREQ(message_content->c_str(), message->GetData()->c_str());
     client->SendMessage(std::make_shared<Petunia::Message>(message_type, message_content));
     });
 
   server->AddListener(message_type, [&](std::shared_ptr<Petunia::Message> message) {
-    EXPECT_STREQ(message_content->c_str(), message->GetText()->c_str());
+    EXPECT_STREQ(message_content->c_str(), message->GetData()->c_str());
     printf("No more!!!\n");
-    printf("Received: %s %llu 0x%p\n", message->GetText()->c_str(), message->GetDataSize(), message->GetData().get());
+    printf("Received: %s %llu 0x%p\n", message->GetData()->c_str(), message->GetDataSize(), message->GetData().get());
     promise.set_value(true);
     });
 
@@ -66,18 +66,18 @@ TEST(PetuniaTests, PetuniaMessageSendNanomsg) {
   Petunia::Petunia *client = new Petunia::Petunia(new Petunia::IPCMediumNanomsg(channel, Petunia::ConnectionRole::Client));
 
   client->AddListener(message_type, [&](std::shared_ptr<Petunia::Message> message) {
-    EXPECT_STREQ(message_content->c_str(), message->GetText()->c_str());
-    client->SendMessage(std::make_shared<Petunia::Message>(message_type, message_content));
+    EXPECT_STREQ(message_content->c_str(), (const char *)message->GetData().get());
+    client->SendMessage(std::make_shared<Petunia::Message>(message_type, message_content->size(), message_content));
     });
 
   server->AddListener(message_type, [&](std::shared_ptr<Petunia::Message> message) {
-    EXPECT_STREQ(message_content->c_str(), message->GetText()->c_str());
+    EXPECT_STREQ(message_content->c_str(), (const char *)message->GetData().get());
     printf("No more!!!\n");
-    printf("Received: %s %llu 0x%p\n", message->GetText()->c_str(), message->GetDataSize(), message->GetData().get());
+    printf("Received: %s %llu 0x%p\n", (const char *)message->GetData().get() , message->GetDataSize(), message->GetData().get());
     promise.set_value(true);
     });
 
-  server->SendMessage(std::make_shared<Petunia::Message>(message_type, message_content));
+  server->SendMessage(std::make_shared<Petunia::Message>(message_type, message_content->size(), message_content));
 
 
   printf("Waiting...");
@@ -145,12 +145,12 @@ TEST(PetuniaTests, PetuniaManyMessagesSendInprocess) {
   Petunia::Petunia *client = new Petunia::Petunia(new Petunia::IPCMediumInprocess(channel, Petunia::ConnectionRole::Client));
 
   client->AddListener(message_type, [&](std::shared_ptr<Petunia::Message> message) {
-    EXPECT_STREQ(message_content->c_str(), message->GetText()->c_str());
+    EXPECT_STREQ(message_content->c_str(), message->GetData()->c_str());
     client->SendMessage(std::make_shared<Petunia::Message>(message_type, message_content));
     });
 
   server->AddListener(message_type, [&](std::shared_ptr<Petunia::Message> message) {
-    EXPECT_STREQ(message_content->c_str(), message->GetText()->c_str());
+    EXPECT_STREQ(message_content->c_str(), message->GetData()->c_str());
     if (--count <= 0) {
       printf("No more!!!\n");
       promise.set_value(true);

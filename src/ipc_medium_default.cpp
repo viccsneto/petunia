@@ -43,8 +43,8 @@ namespace Petunia {
 
       if (!database_already_created)
       {
-        m_ipc_database.execDML("CREATE TABLE to_client(type TEXT, size NUMBER, blob_message BLOB, text_message TEXT, row_id INTEGER PRIMARY KEY)");
-        m_ipc_database.execDML("CREATE TABLE to_server(type TEXT, size NUMBER, blob_message BLOB, text_message TEXT, row_id INTEGER PRIMARY KEY)");
+        m_ipc_database.execDML("CREATE TABLE to_client(type TEXT, size NUMBER, blob_message BLOB, row_id INTEGER PRIMARY KEY)");
+        m_ipc_database.execDML("CREATE TABLE to_server(type TEXT, size NUMBER, blob_message BLOB, row_id INTEGER PRIMARY KEY)");
         m_ipc_database.execDML("CREATE INDEX idx_to_client_type ON to_client(type)");
         m_ipc_database.execDML("CREATE INDEX idx_to_server_type ON to_server(type)");
       }
@@ -77,21 +77,18 @@ namespace Petunia {
           "("
           "   type,"
           "   size,"
-          "   blob_message,"
-          "   text_message"
+          "   blob_message"
           ")"
           "VALUES"
           "("
           "   @type,"
           "   @size,"
           "   @blob_message,"
-          "   @text_message"
           ")");
 
         m_update_message_stmt = m_ipc_database.compileStatement("UPDATE to_client SET "
           "   size = @size,"
-          "   blob_message = @blob_message,"
-          "   text_message = @text_message "
+          "   blob_message = @blob_message"
           "WHERE "
           "   type = @type");
 
@@ -103,21 +100,18 @@ namespace Petunia {
           "("
           "   type,"
           "   size,"
-          "   blob_message,"
-          "   text_message"
+          "   blob_message"
           ")"
           "VALUES"
           "("
           "   @type,"
           "   @size,"
-          "   @blob_message,"
-          "   @text_message"
+          "   @blob_message"
           ")");
 
         m_update_message_stmt = m_ipc_database.compileStatement("UPDATE to_server SET "
           "   size = @size,"
-          "   blob_message = @blob_message,"
-          "   text_message = @text_message "
+          "   blob_message = @blob_message"
           "WHERE "
           "   type = @type");
 
@@ -146,7 +140,7 @@ namespace Petunia {
       buffer->reserve(size);
       memcpy((void *)buffer->data(), message, size);
 
-      return std::make_shared<Message>(std::string(received_messages.getStringField("type")), std::make_shared<std::string>(received_messages.getStringField("text_message")), size, buffer);
+      return std::make_shared<Message>(std::string(received_messages.getStringField("type")), buffer);
     }
 
     CppSQLite3Query QueryReceivedMessages()
@@ -192,8 +186,6 @@ namespace Petunia {
         m_update_message_stmt.bind("@type", message->GetType());
         unsigned long long size = message->GetDataSize();
         m_update_message_stmt.bindInt64("@size", size);
-        std::shared_ptr<std::string> text = message->GetText();
-        m_update_message_stmt.bind("@text_message", (const unsigned char *)text->c_str(), text->size());
         std::shared_ptr<void> data = message->GetData();
         m_update_message_stmt.bind("@blob_message", (const unsigned char *)data.get(), size);
         if (m_update_message_stmt.execDML() != 0) {
@@ -204,8 +196,6 @@ namespace Petunia {
       m_insert_message_stmt.reset();
       m_insert_message_stmt.bind("@type", message->GetType());
       m_insert_message_stmt.bindInt64("@size", message->GetDataSize());
-      std::shared_ptr<std::string> text = message->GetText();
-      m_insert_message_stmt.bind("@text_message", (const unsigned char *)text->c_str(), text->size());
       m_insert_message_stmt.bind("@blob_message", (const unsigned char *)message->GetData().get(), message->GetDataSize());
       m_insert_message_stmt.execDML();
     }
