@@ -13,7 +13,7 @@ namespace Petunia {
     IPCInternalMedium(std::string &channel, ConnectionRole connection_role /*= ConnectionRole::Auto*/)
       :IPCMedium(channel, connection_role)
     {      
-      m_nano_socket = std::make_unique<nn::socket>(AF_SP, NN_PAIR);
+      m_nano_socket = std::make_shared<nn::socket>(AF_SP, NN_PAIR);
       if (connection_role == ConnectionRole::Server) {
         m_nano_socket->bind((std::string("ipc:///") + channel).c_str());
       }
@@ -47,35 +47,30 @@ namespace Petunia {
     
     bool ReceiveMessages(std::queue<std::shared_ptr<Message>> &inbox_queue)
     {
-#if 0
       bool result = false;
-      nn_msghdr header;
-      while (int rc = m_nano_socket->recvmsg(&header, 0) > 0) {        
-        std::string message_type;
-        message_type.reserve(header.msg_controllen);
-        m_nano_socket->recv((void *)message_type.data(), header.msg_controllen, 0);
-        nn_msghdr msgbody;
-        if (m_nano_socket->recvmsg(&msgbody, 0) > 0) {
+      char *buffer = nullptr;
+      while (int rc = m_nano_socket->recv(&buffer, 0, 0) > 0) {        
+        std::string message_type(buffer);
+        free(buffer);
+        if (m_nano_socket->recv(&buffer, 0, 0) > 0) {
           std::shared_ptr<std::string> data = std::make_shared<std::string>();
-          data->reserve(msgbody.msg_controllen);
-          m_nano_socket->recv((void *)data->data(), msgbody.msg_controllen, 0);
-          inbox_queue.push(std::make_shared<Message>(message_type, msgbody.msg_controllen, data));
+          data->reserve(rc);
+          data->assign(buffer);
+          inbox_queue.push(std::make_shared<Message>(message_type, data));
         }
         result = true;
       }
 
       return result;
-#endif        
-      return false;
     }
   private:
-    std::unique_ptr<nn::socket> m_nano_socket;
+    std::shared_ptr<nn::socket> m_nano_socket;
   };
   
   IPCMediumNanomsg::IPCMediumNanomsg(std::string &channel, ConnectionRole connection_role /*= ConnectionRole::Auto*/)
     :IPCMedium(channel, connection_role)
   {
-    m_internal_medium = std::make_unique<IPCInternalMedium>(channel, connection_role);
+    m_internal_medium = std::make_shared<IPCInternalMedium>(channel, connection_role);
   }
 
   IPCMediumNanomsg::~IPCMediumNanomsg()

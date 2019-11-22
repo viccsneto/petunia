@@ -15,6 +15,6 @@ namespace Petunia {
     bool SendMessages(std::queue<std::shared_ptr<Message>> &outbox_queue) override;
   
   private:
-    std::unique_ptr<IPCMedium> m_internal_medium;
+    std::shared_ptr<IPCMedium> m_internal_medium;
   };
 }

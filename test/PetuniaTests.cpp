@@ -11,7 +11,7 @@
 #define ENABLED_EXAMPLE_TEST _
 
 #define MESSAGE_SEND_INPROCESS _
-#define MESSAGE_SEND_NANOMSG_
+#define MESSAGE_SEND_NANOMSG _
 #define MESSAGE_SEND_DEFAULT_
 #define MESSAGE_MANY_SEND_INPROCESS _
 #define MESSAGE_MANY_SEND_NANOMSG_
@@ -56,7 +56,7 @@ TEST(PetuniaTests, PetuniaMessageSendInProcess) {
 
 #ifdef MESSAGE_SEND_NANOMSG           
 TEST(PetuniaTests, PetuniaMessageSendNanomsg) {
-  std::string channel = "test";
+  std::string channel = "test2";
   std::string message_type = "test_message";
   std::shared_ptr<std::string> message_content = std::make_shared<std::string>("content of the message");
   std::promise<bool> promise;
@@ -67,7 +67,7 @@ TEST(PetuniaTests, PetuniaMessageSendNanomsg) {
 
   client->AddListener(message_type, [&](std::shared_ptr<Petunia::Message> message) {
     EXPECT_STREQ(message_content->c_str(), (const char *)message->GetData().get());
-    client->SendMessage(std::make_shared<Petunia::Message>(message_type, message_content->size(), message_content));
+    client->SendMessage(std::make_shared<Petunia::Message>(message_type, message_content));
     });
 
   server->AddListener(message_type, [&](std::shared_ptr<Petunia::Message> message) {
@@ -77,7 +77,7 @@ TEST(PetuniaTests, PetuniaMessageSendNanomsg) {
     promise.set_value(true);
     });
 
-  server->SendMessage(std::make_shared<Petunia::Message>(message_type, message_content->size(), message_content));
+  server->SendMessage(std::make_shared<Petunia::Message>(message_type, message_content));
 
 
   printf("Waiting...");

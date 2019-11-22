@@ -255,7 +255,7 @@ namespace Petunia {
   IPCMediumDefault::IPCMediumDefault(std::string &channel, ConnectionRole connection_role /*= ConnectionRole::Auto*/)
     :IPCMedium(channel, connection_role)
   {
-    m_internal_medium = std::make_unique<IPCInternalMedium>(channel, connection_role);
+    m_internal_medium =  std::make_shared<IPCInternalMedium>(channel, connection_role);
   }
 
   IPCMediumDefault::~IPCMediumDefault()
