@@ -4,6 +4,7 @@
 #include <queue>
 #include <memory>
 namespace Petunia {
+  class IPCInternalMedium;
   class IPCMediumNanomsg : public IPCMedium
   {
   public:
@@ -15,6 +16,6 @@ namespace Petunia {
     bool SendMessages(std::queue<std::shared_ptr<Message>> &outbox_queue) override;
   
   private:
-    std::shared_ptr<IPCMedium> m_internal_medium;
+    std::shared_ptr<IPCInternalMedium> m_internal_medium;
   };
 }

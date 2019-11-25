@@ -3,7 +3,7 @@
 #include <petunia/osutils.h>
 #include <nanomsg/nn.hpp>
 #include <nanomsg/pair.h>
-
+#include <iostream>
 
 
 namespace Petunia {
@@ -24,7 +24,7 @@ namespace Petunia {
     
     ~IPCInternalMedium()
     {
-    
+      std::cout << "shutdown " << m_channel << " : " << (m_connection_role == ConnectionRole::Server ? "Server" : "Client");
     }
 
     bool SendMessages(std::queue<std::shared_ptr<Message>> &outbox_queue)
@@ -33,8 +33,8 @@ namespace Petunia {
         while (!outbox_queue.empty()) {
           std::shared_ptr<Message> message = outbox_queue.front();
           
-          m_nano_socket->send((const void *)message.get()->GetType(), strlen(message.get()->GetType()), 0);
-          m_nano_socket->send(message.get()->GetData().get(), message->GetDataSize(), 0);
+          m_nano_socket->send((const void *)message.get()->GetType(), strlen(message.get()->GetType()) + 1, 0);
+          m_nano_socket->send(message.get()->GetData().get()->c_str(), message->GetDataSize() + 1, 0);
         
           outbox_queue.pop();
         }
@@ -47,21 +47,22 @@ namespace Petunia {
     
     bool ReceiveMessages(std::queue<std::shared_ptr<Message>> &inbox_queue)
     {
-      bool result = false;
       char *buffer = nullptr;
-      while (int rc = m_nano_socket->recv(&buffer, 0, 0) > 0) {        
+      int rc;
+      while ((rc = m_nano_socket->recv(&buffer, NN_MSG, 0)) > 0) {        
         std::string message_type(buffer);
-        free(buffer);
-        if (m_nano_socket->recv(&buffer, 0, 0) > 0) {
+        nn_freemsg(buffer);
+        if ((rc = m_nano_socket->recv(&buffer, NN_MSG, 0)) > 0) {
           std::shared_ptr<std::string> data = std::make_shared<std::string>();
           data->reserve(rc);
-          data->assign(buffer);
+          memcpy((char *)data->data(), buffer,  rc);
+          nn_freemsg(buffer);
           inbox_queue.push(std::make_shared<Message>(message_type, data));
         }
-        result = true;
+        return true;
       }
 
-      return result;
+      return false;
     }
   private:
     std::shared_ptr<nn::socket> m_nano_socket;
@@ -75,6 +76,7 @@ namespace Petunia {
 
   IPCMediumNanomsg::~IPCMediumNanomsg()
   {
+    
   }
 
   bool IPCMediumNanomsg::SendMessages(std::queue<std::shared_ptr<Message>> &outbox_queue)

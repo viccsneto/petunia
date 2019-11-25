@@ -10,6 +10,7 @@ namespace Petunia
     , m_msg_data(msg_data)
     , m_overwrite(false)
   {
+
   }
   
   const char *Message::GetType()
