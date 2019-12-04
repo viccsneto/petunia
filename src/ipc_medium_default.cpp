@@ -83,12 +83,12 @@ namespace Petunia {
           "("
           "   @type,"
           "   @size,"
-          "   @blob_message,"
+          "   @blob_message"
           ")");
 
         m_update_message_stmt = m_ipc_database.compileStatement("UPDATE to_client SET "
           "   size = @size,"
-          "   blob_message = @blob_message"
+          "   blob_message = @blob_message "
           "WHERE "
           "   type = @type");
 
@@ -111,7 +111,7 @@ namespace Petunia {
 
         m_update_message_stmt = m_ipc_database.compileStatement("UPDATE to_server SET "
           "   size = @size,"
-          "   blob_message = @blob_message"
+          "   blob_message = @blob_message "
           "WHERE "
           "   type = @type");
 
@@ -137,7 +137,7 @@ namespace Petunia {
       int size = received_messages.getSizeTField("size");
       std::shared_ptr<std::string> buffer = std::make_shared<std::string>();
       const unsigned char *message = received_messages.getBlobField("blob_message", size);
-      buffer->reserve(size);
+      buffer->resize(size);
       memcpy((void *)buffer->data(), message, size);
 
       return std::make_shared<Message>(std::string(received_messages.getStringField("type")), buffer);
@@ -184,10 +184,8 @@ namespace Petunia {
       if (message->GetOverwriteMode()) {
         m_update_message_stmt.reset();
         m_update_message_stmt.bind("@type", message->GetType());
-        unsigned long long size = message->GetDataSize();
-        m_update_message_stmt.bindInt64("@size", size);
-        std::shared_ptr<void> data = message->GetData();
-        m_update_message_stmt.bind("@blob_message", (const unsigned char *)data.get(), size);
+        m_update_message_stmt.bindInt64("@size", message->GetDataSize());
+        m_update_message_stmt.bind("@blob_message", (const unsigned char *)message->GetData()->data(), message->GetDataSize());
         if (m_update_message_stmt.execDML() != 0) {
           return;
         }
@@ -196,7 +194,7 @@ namespace Petunia {
       m_insert_message_stmt.reset();
       m_insert_message_stmt.bind("@type", message->GetType());
       m_insert_message_stmt.bindInt64("@size", message->GetDataSize());
-      m_insert_message_stmt.bind("@blob_message", (const unsigned char *)message->GetData().get(), message->GetDataSize());
+      m_insert_message_stmt.bind("@blob_message", (const unsigned char *)message->GetData()->data(), message->GetDataSize());
       m_insert_message_stmt.execDML();
     }
 

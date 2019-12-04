@@ -14,6 +14,8 @@ namespace Petunia {
       :IPCMedium(channel, connection_role)
     {      
       m_nano_socket = std::make_shared<nn::socket>(AF_SP, NN_PAIR);
+      int max_size = -1;
+      m_nano_socket->setsockopt(NN_SOL_SOCKET, NN_RCVMAXSIZE, &max_size, sizeof(max_size));
       if (connection_role == ConnectionRole::Server) {
         m_nano_socket->bind((std::string("ipc:///") + channel).c_str());
       }
@@ -49,13 +51,13 @@ namespace Petunia {
       char *buffer = nullptr;
       int rc;
       bool received = false;
-      while ((rc = m_nano_socket->recv(&buffer, NN_MSG, 0)) > 0) {        
+      while ((rc = m_nano_socket->recv(&buffer, NN_MSG, NN_DONTWAIT)) > 0) {        
         std::string message_type(buffer);
         nn_freemsg(buffer);
         buffer = nullptr;
         if ((rc = m_nano_socket->recv(&buffer, NN_MSG, 0)) > 0) {
           std::shared_ptr<std::string> data = std::make_shared<std::string>();
-          data->reserve(rc);
+          data->resize(rc);
           memcpy((char *)data->data(), buffer,  rc);
           nn_freemsg(buffer);
           inbox_queue.push(std::make_shared<Message>(message_type, data));

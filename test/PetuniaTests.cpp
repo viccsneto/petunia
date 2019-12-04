@@ -5,22 +5,17 @@
 #include <petunia/ipc_medium_nanomsg.h>
 #include <future>
 
-// Put the name and the underscore together to disable the test:
-#define DISABLED_EXAMPLE_TEST_
-// Separate the underscore from the name to enable the test:
-#define ENABLED_EXAMPLE_TEST _
-
-#define MESSAGE_SEND_INPROCESS_
-#define MESSAGE_SEND_NANOMSG_
-#define MESSAGE_SEND_DEFAULT_
-#define MESSAGE_MANY_SEND_INPROCESS_
-#define MESSAGE_MANY_SEND_NANOMSG _
-#define MESSAGE_MANY_SEND_DEFAULT_
+#define MESSAGE_SEND_INPROCESS      1
+#define MESSAGE_SEND_NANOMSG        1
+#define MESSAGE_SEND_DEFAULT        1
+#define MESSAGE_MANY_SEND_INPROCESS 1
+#define MESSAGE_MANY_SEND_NANOMSG   1
+#define MESSAGE_MANY_SEND_DEFAULT   1
 
 
 
 
-#ifdef MESSAGE_SEND_INPROCESS
+#if MESSAGE_SEND_INPROCESS
 TEST(PetuniaTests, PetuniaMessageSendInProcess) {
   std::string channel = "test";
   std::string message_type = "test_message";
@@ -54,7 +49,7 @@ TEST(PetuniaTests, PetuniaMessageSendInProcess) {
 }
 #endif
 
-#ifdef MESSAGE_SEND_NANOMSG           
+#if MESSAGE_SEND_NANOMSG           
 TEST(PetuniaTests, PetuniaMessageSendNanomsg) {
   std::string channel = "test";
   std::string message_type = "test_message";
@@ -88,7 +83,7 @@ TEST(PetuniaTests, PetuniaMessageSendNanomsg) {
 }
 #endif
 
-#ifdef MESSAGE_SEND_DEFAULT
+#if MESSAGE_SEND_DEFAULT
 TEST(PetuniaTests, PetuniaMessageSendDefault) {
   std::string channel = "test";
   std::string message_type = "test_message";
@@ -122,7 +117,7 @@ TEST(PetuniaTests, PetuniaMessageSendDefault) {
 }
 #endif
 
-#ifdef MESSAGE_MANY_SEND_INPROCESS
+#if MESSAGE_MANY_SEND_INPROCESS
 TEST(PetuniaTests, PetuniaManyMessagesSendInprocess) {
   std::string channel = "test";
   std::string message_type = "test_message";
@@ -170,7 +165,7 @@ TEST(PetuniaTests, PetuniaManyMessagesSendInprocess) {
 }
 #endif
 
-#ifdef MESSAGE_MANY_SEND_NANOMSG
+#if MESSAGE_MANY_SEND_NANOMSG
 TEST(PetuniaTests, PetuniaManyMessagesSendNanomsg) {
   std::string channel = "test";
   std::string message_type = "test_message";
@@ -179,7 +174,7 @@ TEST(PetuniaTests, PetuniaManyMessagesSendNanomsg) {
   std::future<bool> future = promise.get_future();
 
   int count = 1024;
-  size_t message_size = 1024 * 1 * 2; // 2MB
+  size_t message_size = 1024 * 1024 * 2; // 2MB
 
   if (message_size < message_content->size()) {
     message_content->resize(message_size);
@@ -219,7 +214,7 @@ TEST(PetuniaTests, PetuniaManyMessagesSendNanomsg) {
 
 #endif
 
-#ifdef MESSAGE_MANY_SEND_DEFAULT
+#if MESSAGE_MANY_SEND_DEFAULT
 TEST(PetuniaTests, PetuniaManyMessagesSendDefault) {
   std::string channel = "test";
   std::string message_type = "test_message";
