@@ -69,7 +69,9 @@ namespace Petunia
     {
       std::unique_lock<std::mutex> locked(m_send_lock);
       m_send_condition_variable.wait(locked, [&] {return m_outbox_queue.size() > 0 || !m_running;});
-      SendEnqueuedMessages();
+      if (m_running) {
+        SendEnqueuedMessages();
+      }
     }
   }
 

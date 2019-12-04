@@ -29,18 +29,17 @@ namespace Petunia {
 
     bool SendMessages(std::queue<std::shared_ptr<Message>> &outbox_queue)
     {     
-      if (!outbox_queue.empty()) {       
+      if (!outbox_queue.empty()) {
         while (!outbox_queue.empty()) {
           std::shared_ptr<Message> message = outbox_queue.front();
-          
-          m_nano_socket->send((const void *)message.get()->GetType(), strlen(message.get()->GetType()) + 1, 0);
-          m_nano_socket->send(message.get()->GetData().get()->c_str(), message->GetDataSize() + 1, 0);
-        
+
+          m_nano_socket->send(message.get()->GetType(), strlen(message.get()->GetType()) + 1, 0);
+          m_nano_socket->send(message.get()->GetData().get()->c_str(), message->GetDataSize(), 0);
+
           outbox_queue.pop();
         }
-        
         return true;
-      }
+      }      
 
       return false;
     }
@@ -49,20 +48,21 @@ namespace Petunia {
     {
       char *buffer = nullptr;
       int rc;
+      bool received = false;
       while ((rc = m_nano_socket->recv(&buffer, NN_MSG, 0)) > 0) {        
         std::string message_type(buffer);
         nn_freemsg(buffer);
+        buffer = nullptr;
         if ((rc = m_nano_socket->recv(&buffer, NN_MSG, 0)) > 0) {
           std::shared_ptr<std::string> data = std::make_shared<std::string>();
           data->reserve(rc);
           memcpy((char *)data->data(), buffer,  rc);
           nn_freemsg(buffer);
           inbox_queue.push(std::make_shared<Message>(message_type, data));
+          received = true;
         }
-        return true;
       }
-
-      return false;
+      return received;
     }
   private:
     std::shared_ptr<nn::socket> m_nano_socket;

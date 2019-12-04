@@ -10,10 +10,10 @@
 // Separate the underscore from the name to enable the test:
 #define ENABLED_EXAMPLE_TEST _
 
-#define MESSAGE_SEND_INPROCESS _
-#define MESSAGE_SEND_NANOMSG _
+#define MESSAGE_SEND_INPROCESS_
+#define MESSAGE_SEND_NANOMSG_
 #define MESSAGE_SEND_DEFAULT_
-#define MESSAGE_MANY_SEND_INPROCESS _
+#define MESSAGE_MANY_SEND_INPROCESS_
 #define MESSAGE_MANY_SEND_NANOMSG _
 #define MESSAGE_MANY_SEND_DEFAULT_
 
@@ -107,7 +107,7 @@ TEST(PetuniaTests, PetuniaMessageSendDefault) {
   server->AddListener(message_type, [&](std::shared_ptr<Petunia::Message> message) {
     EXPECT_STREQ(message_content->c_str(), (const char *)message->GetData().get()->c_str());
     printf("No more!!!\n");
-    printf("Received: %s %llu 0x%p\n", message->GetText()->c_str(), message->GetDataSize(), message->GetData());
+    printf("Received: %s %llu 0x%p\n", message->GetData()->c_str(), message->GetDataSize(), message->GetData());
     promise.set_value(true);
     });
 
@@ -179,7 +179,7 @@ TEST(PetuniaTests, PetuniaManyMessagesSendNanomsg) {
   std::future<bool> future = promise.get_future();
 
   int count = 1024;
-  size_t message_size = 1024 * 1024 * 2; // 2MB
+  size_t message_size = 1024 * 1 * 2; // 2MB
 
   if (message_size < message_content->size()) {
     message_content->resize(message_size);
@@ -216,6 +216,7 @@ TEST(PetuniaTests, PetuniaManyMessagesSendNanomsg) {
   delete client;
   delete server;
 }
+
 #endif
 
 #ifdef MESSAGE_MANY_SEND_DEFAULT

@@ -93,7 +93,7 @@ namespace nn
 
         inline ~socket ()
         {
-            int rc = nn_close (s);
+            int rc = nn_close (s);           
             assert (rc == 0);
         }
 
