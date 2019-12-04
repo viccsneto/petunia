@@ -31,7 +31,7 @@ namespace Petunia {
     
     ~IPCInternalMedium()
     {
-      std::cout << "shutdown " << m_channel << " : " << (m_connection_role == ConnectionRole::Server ? "Server" : "Client");
+
     }
 
     bool SendMessages(std::queue<std::shared_ptr<Message>> &outbox_queue)
