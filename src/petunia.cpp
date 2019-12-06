@@ -30,7 +30,7 @@ namespace Petunia
 
   std::string Petunia::GetID()
   {
-    return m_channel;
+    return m_ipc_medium->GetChannel();
   }
 
   void Petunia::SendMessage(std::shared_ptr<Message> message)
@@ -111,9 +111,9 @@ namespace Petunia
     return petunia_folder_path;
   }
 
-  std::string Petunia::GetChannel()
+  const std::string Petunia::GetChannel() const
   {
-    return m_channel;
+    return m_ipc_medium->GetChannel();
   }
 
   size_t Petunia::Distribute()
@@ -133,7 +133,7 @@ namespace Petunia
     return count;
   }
 
-  size_t Petunia::AddListener(std::string& name, std::function<void(std::shared_ptr<Message> message)> listener_function)
+  size_t Petunia::AddListener(std::string name, std::function<void(std::shared_ptr<Message> message)> listener_function)
   {
     std::list <std::function<void(std::shared_ptr<Message> message)>> *list = nullptr;
     auto search = m_message_listeners.find(name);
@@ -147,15 +147,18 @@ namespace Petunia
     return list->size();
   }
 
-    void Petunia::RemoveListeners(std::string& name)
+    bool Petunia::RemoveListeners(std::string name)
     {
       auto search = m_message_listeners.find(name);
       if (search != m_message_listeners.end()) {
         m_message_listeners.erase(search);
+        return true;
       }
+
+      return false;
     }
 
-    void Petunia::RemovePromises(std::string& name)
+    void Petunia::RemovePromises(std::string name)
     {
 
     }
