@@ -23,11 +23,11 @@ namespace Petunia
     std::string       GetID();
     void              SendMessage(std::shared_ptr<Message> msg);
     void              UpdateMessage(std::shared_ptr<Message> msg);
-    std::string       GetChannel();
+    const std::string       GetChannel() const;
     size_t            Distribute();
-    size_t            AddListener(std::string& name, std::function<void(std::shared_ptr<Message> message)> listener_function);
-    void              RemoveListeners(std::string& name);
-    void              RemovePromises(std::string& name);
+    size_t            AddListener(std::string name, std::function<void(std::shared_ptr<Message> message)> listener_function);
+    bool              RemoveListeners(std::string name);
+    void              RemovePromises(std::string name);
     void              Clear();
     void              ClearListeners();
     void              ClearPromises();

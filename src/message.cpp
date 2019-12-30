@@ -10,9 +10,14 @@ namespace Petunia
     , m_msg_data(msg_data)
     , m_overwrite(false)
   {
-
+    msg_type.resize(m_msg_type.size() + 1);
   }
   
+ Message::Message(std::string msg_type, std::string msg_data)
+  : Message(msg_type, std::make_shared<std::string>(msg_data))
+  {
+  }
+
   const char *Message::GetType()
   {
     return m_msg_type.c_str();

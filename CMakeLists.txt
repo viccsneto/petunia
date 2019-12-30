@@ -47,7 +47,7 @@ target_include_directories(petunia
 
 
 target_link_libraries(petunia PRIVATE
-  sqlite3
+  sqlite3lib
   nanomsg
 )
 

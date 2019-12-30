@@ -13,11 +13,8 @@ namespace Petunia {
     IPCInternalMedium(std::string &channel, ConnectionRole connection_role /*= ConnectionRole::Auto*/)
       :IPCMedium(channel, connection_role)
     {      
-#ifdef _WIN32
-      std::string channel_prefix = "ipc:///";
-#else 
       std::string channel_prefix = "ipc:///tmp/";
-#endif
+
       m_nano_socket = std::make_shared<nn::socket>(AF_SP, NN_PAIR);
       int max_size = -1;
       m_nano_socket->setsockopt(NN_SOL_SOCKET, NN_RCVMAXSIZE, &max_size, sizeof(max_size));

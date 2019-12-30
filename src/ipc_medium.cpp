@@ -17,4 +17,10 @@ namespace Petunia
   {
     return m_connection_role;
   }
+
+  const std::string IPCMedium::GetChannel() const
+  {
+    return m_channel;
+  }
+
 }

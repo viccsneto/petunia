@@ -8,6 +8,7 @@ namespace Petunia
   {
   public: 
     Message(std::string msg_type, std::shared_ptr<std::string> msg_data);
+    Message(std::string msg_type, std::string msg_data);
     const char         *GetType();
     unsigned long long  GetDataSize();
     std::shared_ptr<std::string> GetData();
