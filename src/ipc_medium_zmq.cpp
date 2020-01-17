@@ -1,8 +1,7 @@
-#include <petunia/ipc_medium_nanomsg.h>
+#include <petunia/ipc_medium_zmq.h>
 #include <assert.h>
 #include <petunia/osutils.h>
-#include <nanomsg/nn.hpp>
-#include <nanomsg/pair.h>
+#include <zmq.hpp>
 #include <iostream>
 
 
@@ -15,20 +14,21 @@ namespace Petunia {
     {      
       std::string channel_prefix = "ipc:///tmp/";
 
-      m_nano_socket = std::make_shared<nn::socket>(AF_SP, NN_PAIR);
-      int max_size = -1;
-      m_nano_socket->setsockopt(NN_SOL_SOCKET, NN_RCVMAXSIZE, &max_size, sizeof(max_size));
+      m_context = new zmq::context_t(1);      
       if (connection_role == ConnectionRole::Server) {
-        m_nano_socket->bind((channel_prefix + channel).c_str());
+        m_socket = new zmq::socket_t(m_context, ZMQ_REP);
       }
       else {
-        m_nano_socket->connect((channel_prefix + channel).c_str());
+        m_socket = new zmq::socket_t(m_context, ZMQ_REQ);
       }
+
+      m_socket->bind((channel_prefix + channel).c_str());
     }
     
     ~IPCInternalMedium()
     {
-
+      delete m_socket;
+      delete m_context;
     }
 
     bool SendMessages(std::queue<std::shared_ptr<Message>> &outbox_queue)
@@ -36,9 +36,16 @@ namespace Petunia {
       if (!outbox_queue.empty()) {
         while (!outbox_queue.empty()) {
           std::shared_ptr<Message> message = outbox_queue.front();
+          
+          size_t msg_type_size = strlen(message->GetType());
+          zmq::message_t message_type(msg_type_size);
+          memcpy(message_type.data(), message->GetType(), msg_type_size);
+          m_socket->send(message_type);
 
-          m_nano_socket->send(message.get()->GetType(), strlen(message.get()->GetType()) + 1, 0);
-          m_nano_socket->send(message.get()->GetData().get()->c_str(), message->GetDataSize(), 0);
+          zmq::message_t message_body(message->GetDataSize());
+
+          memcpy(message_body.data(), message->GetData()->data(), message->GetDataSize());
+          m_socket->send(message_body);
 
           outbox_queue.pop();
         }
@@ -50,6 +57,14 @@ namespace Petunia {
     
     bool ReceiveMessages(std::queue<std::shared_ptr<Message>> &inbox_queue)
     {
+      zmq::message_t message_type;
+      m_socket->recv(&message_type);
+
+      zmq::message_t message_body;
+      m_socket->recv(&message_body);
+
+      inbox_queue.push(std::make_shared<Petunia::Message>(std::string(message_type.data()),)
+
       char *buffer = nullptr;
       int rc;
       bool received = false;
@@ -69,27 +84,28 @@ namespace Petunia {
       return received;
     }
   private:
-    std::shared_ptr<nn::socket> m_nano_socket;
+    zmq::context_t *m_context;
+    zmq::socket_t *m_socket;
   };
   
-  IPCMediumNanomsg::IPCMediumNanomsg(std::string &channel, ConnectionRole connection_role /*= ConnectionRole::Auto*/)
+  IPCMediumZMQ::IPCMediumZMQ(std::string &channel, ConnectionRole connection_role /*= ConnectionRole::Auto*/)
     :IPCMedium(channel, connection_role)
   {
     m_internal_medium = std::make_shared<IPCInternalMedium>(channel, connection_role);
   }
 
-  IPCMediumNanomsg::~IPCMediumNanomsg()
+  IPCMediumZMQ::~IPCMediumZMQ()
   {
     
   }
 
-  bool IPCMediumNanomsg::SendMessages(std::queue<std::shared_ptr<Message>> &outbox_queue)
+  bool IPCMediumZMQ::SendMessages(std::queue<std::shared_ptr<Message>> &outbox_queue)
   {
     return m_internal_medium->SendMessages(outbox_queue);
   }
 
 
-  bool IPCMediumNanomsg::ReceiveMessages(std::queue<std::shared_ptr<Message>> &inbox_queue)
+  bool IPCMediumZMQ::ReceiveMessages(std::queue<std::shared_ptr<Message>> &inbox_queue)
   {
     return m_internal_medium->ReceiveMessages(inbox_queue);
   }

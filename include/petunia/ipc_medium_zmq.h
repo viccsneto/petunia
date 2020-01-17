@@ -5,13 +5,13 @@
 #include <memory>
 namespace Petunia {
   class IPCInternalMedium;
-  class IPCMediumNanomsg : public IPCMedium
+  class IPCMediumZMQ : public IPCMedium
   {
   public:
-    IPCMediumNanomsg(std::string &channel, ConnectionRole connection_role = ConnectionRole::Auto);
+    IPCMediumZMQ(std::string &channel, ConnectionRole connection_role = ConnectionRole::Auto);
 
 
-    ~IPCMediumNanomsg();
+    ~IPCMediumZMQ();
     bool ReceiveMessages(std::queue<std::shared_ptr<Message>> &inbox_queue) override;
     bool SendMessages(std::queue<std::shared_ptr<Message>> &outbox_queue) override;
   
