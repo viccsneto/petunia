@@ -16,10 +16,10 @@ namespace Petunia {
 
       m_context = new zmq::context_t(1);      
       if (connection_role == ConnectionRole::Server) {
-        m_socket = new zmq::socket_t(m_context, ZMQ_REP);
+        m_socket = new zmq::socket_t(*m_context, ZMQ_REP);
       }
       else {
-        m_socket = new zmq::socket_t(m_context, ZMQ_REQ);
+        m_socket = new zmq::socket_t(*m_context, ZMQ_REQ);
       }
 
       m_socket->bind((channel_prefix + channel).c_str());
@@ -57,31 +57,21 @@ namespace Petunia {
     
     bool ReceiveMessages(std::queue<std::shared_ptr<Message>> &inbox_queue)
     {
-      zmq::message_t message_type;
-      m_socket->recv(&message_type);
+      zmq::message_t zmq_message_type;
+      if (m_socket->recv(&zmq_message_type, ZMQ_NOBLOCK)) {
+        zmq::message_t zmq_message_body;
+        m_socket->recv(&zmq_message_body);
 
-      zmq::message_t message_body;
-      m_socket->recv(&message_body);
+        std::string message_type((const char *)zmq_message_type.data());
+        std::shared_ptr<std::string> message_data = std::make_shared<std::string>();
+        message_data->resize(zmq_message_body.size());
+        memcpy((char *)message_data->data(), zmq_message_body.data(), zmq_message_body.size());
+        inbox_queue.push(std::make_shared<Message>(message_type,message_data));
 
-      inbox_queue.push(std::make_shared<Petunia::Message>(std::string(message_type.data()),)
-
-      char *buffer = nullptr;
-      int rc;
-      bool received = false;
-      while ((rc = m_nano_socket->recv(&buffer, NN_MSG, NN_DONTWAIT)) > 0) {        
-        std::string message_type(buffer);
-        nn_freemsg(buffer);
-        buffer = nullptr;
-        if ((rc = m_nano_socket->recv(&buffer, NN_MSG, 0)) > 0) {
-          std::shared_ptr<std::string> data = std::make_shared<std::string>();
-          data->resize(rc);
-          memcpy((char *)data->data(), buffer,  rc);
-          nn_freemsg(buffer);
-          inbox_queue.push(std::make_shared<Message>(message_type, data));
-          received = true;
-        }
+        return true;
       }
-      return received;
+
+      return false;
     }
   private:
     zmq::context_t *m_context;
