@@ -1,23 +1,18 @@
 #include <gtest/gtest.h>
 #include <petunia/petunia.h>
-#include <petunia/ipc_medium_default.h>
 #include <petunia/ipc_medium_inprocess.h>
 #include <petunia/ipc_medium_nanomsg.h>
 #include <petunia/ipc_medium_zmq.h>
 #include <future>
 
 #define MESSAGE_SEND_INPROCESS      1
-#define MESSAGE_SEND_NANOMSG        1
-#define MESSAGE_SEND_ZMQ            1
-#define MESSAGE_SEND_DEFAULT        0
 #define MESSAGE_MANY_SEND_INPROCESS 1
+
+#define MESSAGE_SEND_NANOMSG        1
 #define MESSAGE_MANY_SEND_NANOMSG   1
+
+#define MESSAGE_SEND_ZMQ            1
 #define MESSAGE_MANY_SEND_ZMQ       1
-#define MESSAGE_MANY_SEND_DEFAULT   0
-
-
-
-
 
 #if MESSAGE_SEND_INPROCESS
 TEST(PetuniaTests, PetuniaMessageSendInProcess) {

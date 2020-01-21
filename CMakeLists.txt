@@ -14,7 +14,6 @@ set(PETUNIA_SRCS
   src/message.cpp
   src/petunia.cpp
   src/ipc_medium.cpp
-  src/ipc_medium_default.cpp
   src/ipc_medium_inprocess.cpp
   src/ipc_medium_nanomsg.cpp
   src/ipc_medium_zmq.cpp
@@ -49,7 +48,6 @@ target_include_directories(petunia
 
 
 target_link_libraries(petunia PRIVATE
-  sqlite3lib
   nanomsg
   zmqlib
 )
