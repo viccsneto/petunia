@@ -19,7 +19,6 @@ set(PETUNIA_SRCS
   src/ipc_medium_zmq.cpp
   src/osutils.cpp
   include/petunia/ipc_medium.h
-  include/petunia/ipc_medium_default.h
   include/petunia/ipc_medium_inprocess.h
   include/petunia/ipc_medium_nanomsg.h
   include/petunia/ipc_medium_zmq.h
