@@ -8,7 +8,7 @@ An easy to use IPC library designed to support pair communication between proces
 * Inprocess
 
 #### Demo
-First test using the Electron Offscreen Rendering feature and the interprocess communication library that I am working on to transfer the texture from electron to the Aztec Game Engine.
+First test using the Electron Offscreen Rendering feature to transfer the texture from electron to be rendered on the Aztec Game Engine.
 
 Credits to the Infant Annihilator Metal band. 
 
